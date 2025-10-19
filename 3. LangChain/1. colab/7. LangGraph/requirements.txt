@@ -6,12 +6,13 @@ pandas==2.3.3       # 데이터 분석 패키지
 langchain==0.3.26 # LangChain 메인 패키지
 langchain-core==0.3.74 # LangChain 코어 기능
 langchain-community==0.3.27 # LangChain 커뮤니티 확장
+langchain-experimental==0.3.4
 langsmith==0.4.14
+langgraph==0.2.61
 
 # Tools 패키지
 tavily-python==0.7.10
 
-
-
 # 모델별 패키지
-langchain-groq==0.3.6 # Groq 모델 통합
+langchain-ollama==0.3.4 # Ollama 모델 통합
+langchain-openai==0.3.8 # OpenAI 모델 통합
