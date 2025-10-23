@@ -24,6 +24,9 @@ psycopg2-binary==2.9.10
 pymilvus==2.6.2
 langchain-milvus==0.2.1
 
+# Loader 패키지 
+pdfplumber==0.11.4
+
 # 유사도 라이브러리 
 scikit-learn==1.7.2
 
