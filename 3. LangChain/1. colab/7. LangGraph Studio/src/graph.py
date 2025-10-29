@@ -1,71 +1,63 @@
-"""LangGraph single-node graph template.
-
-Returns a predefined response. Replace logic and configuration as needed.
-"""
-
-from __future__ import annotations
-
-
-from langgraph.graph import START, END
 from langgraph.graph import StateGraph
 
-from src.states import State
-from src.nodes import len_str, add_one, add_two
+from src.states import AssistantState
+from src.nodes import ai_agent_node, tool_execution_node, final_response_node
 
-def __add_nodes(simple_graph:StateGraph):
-  simple_graph.add_node(
-      "len_str", len_str
-  )
-
-  simple_graph.add_node(
-      "add_one", add_one
-  )
-
-  simple_graph.add_node(
-      "add_two", add_two
-  )
-
-def __is_stop_fnc(state: State) -> str:
-    is_stop = state["is_stop"]
-    if is_stop:
-        return "go_stop"
+def should_use_tools(state: AssistantState) -> str:
+    """도구 사용이 필요한지 판단하는 라우팅 함수"""
+    last_message = state["messages"][-1]
+    
+    if hasattr(last_message, 'tool_calls') and last_message.tool_calls:
+        print("라우팅: 도구 실행 필요 → 도구 실행 노드로")
+        return "execute_tools"
     else:
-        return "go_to_add_two_fnc"
-
-def __add_edge(simple_graph:StateGraph):
-  simple_graph.add_edge(
-      START ,      # 시작 노드
-      "len_str"    # 끝 노드
-  )
-
-  simple_graph.add_edge(
-      "len_str",  # 시작 노드
-      "add_one"   # 끝 노드
-  )
-
-  simple_graph.add_edge(
-      "add_two",    # 시작 노드
-      "add_one"     # 끝 노드
-  )
-
-  simple_graph.add_conditional_edges(
-      "add_one",  # 시작 노드
-      __is_stop_fnc,    # 어떤 노드로 전달할지 정의된 함수
-      # 끝 노드
-      {
-          "go_to_add_two_fnc":"add_two",
-          "go_stop":END
-      }
-  )
+        print("라우팅: 도구 실행 불필요 → 최종 응답으로")
+        return "final_response"
 
 
-def main():
-  simple_graph = StateGraph(State)
+def create_ai_assistant():
+    """도구를 사용하는 AI 개인 비서 그래프"""
+    ##################################################
+    # 그래프를 생성할 객체 생성   
+    ##################################################
+    workflow = StateGraph(AssistantState)
+    
+    ##################################################
+    # 모든 노드 추가
+    ##################################################
+    workflow.add_node("ai_agent", ai_agent_node)
+    workflow.add_node("execute_tools", tool_execution_node)
+    workflow.add_node("final_response", final_response_node)
+    
+    ##################################################
+    # 모든 엣지 추가 
+    ##################################################
+    # 시작점
+    workflow.set_entry_point("ai_agent")
+    
+    # 조건부 엣지: AI 에이전트 → 도구 실행 or 최종 응답
+    workflow.add_conditional_edges(
+        "ai_agent",
+        should_use_tools,
+        {
+            "execute_tools": "execute_tools",
+            "final_response": "final_response"
+        }
+    )
+    
+    # 도구 실행 후에는 다시 AI 에이전트로 (결과 해석을 위해)
+    workflow.add_edge("execute_tools", "final_response")
+    
+    # 최종 응답은 종료점
+    workflow.set_finish_point("final_response")
 
-  __add_nodes(simple_graph)
-  __add_edge(simple_graph)
+    ##################################################
+    # 컴파일 -> 그래프 생성  
+    ##################################################  
+    return workflow.compile()
 
-  return simple_graph.compile()
 
-graph = main()
+# LangGraph Studio를 위한 graph 변수 export
+graph = create_ai_assistant()
+
 
