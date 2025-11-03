@@ -21,7 +21,7 @@ def app():
     print_message(ROLE_TYPE.user.name, prompt)
     
     # AI 응답 요청
-    generator = provider()
+    generator = provider()  
     # AI 응답 표시
     assistant_message = print_message(
       ROLE_TYPE.assistant.name
