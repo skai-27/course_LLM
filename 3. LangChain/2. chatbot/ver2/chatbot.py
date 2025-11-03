@@ -1,35 +1,47 @@
+######################################
+# 웹서비스 
+######################################
 import streamlit as st 
+from common.graph.model import get_response_from_model
+from common.screen.history import create_history
 
-from common.screen.history import add_history
-from common.screen.display import print_message
-from common.screen.input import get_prompt
-from common.screen.constant import ROLE_TYPE
-from common.screen.utils import init_page, init_display
+st.title("챗봇 서비스")
 
-def app():
-  st.title("Chatbot")
+######################################
+# 챗봇 히스토리
+######################################
+create_history()
 
-  # 화면 초기화  
-  provider = init_display()
-  # 사용자 입력
-  prompt = get_prompt()
+######################################
+# 챗봇 - 사용자의 문의
+######################################
+question = st.chat_input("무엇이든지 물어봐주세요.")
+if question is not None:
+    user_msg = {
+        "role":"user",
+        "content":question
+    }
+    # 이력에 추가 
+    st.session_state.messages.append(user_msg)
+    # 화면에 추가 
+    with st.chat_message(user_msg["role"]):
+        st.markdown(user_msg["content"]) 
 
-  if prompt is not None:
-    # 사용자 메시지를 세션 상태에 추가
-    add_history(ROLE_TYPE.user, prompt)
-    # 사용자 메시지 표시
-    print_message(ROLE_TYPE.user.name, prompt)
+    ######################################
+    # 챗봇 - AI 답변
+    ######################################
+    ai_msg = {
+        "role":"assistant",
+        "content":""
+    }
+    # 화면에 추가
+    with st.chat_message(ai_msg["role"]):
+        message = st.empty()
+        # 모델 답변 
+        for res_token in get_response_from_model(question):
+            ai_msg["content"] += res_token
+            message.markdown(ai_msg["content"])
     
-    # AI 응답 요청
-    generator = provider()  
-    # AI 응답 표시
-    assistant_message = print_message(
-      ROLE_TYPE.assistant.name
-      , generator)
+        # 이력에 추가
+        st.session_state.messages.append(ai_msg)
     
-    add_history(ROLE_TYPE.assistant, assistant_message)
-
-if __name__=="__main__":
-  init_page()
-  app() 
-
