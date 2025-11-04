@@ -2,8 +2,9 @@
 # 웹서비스 
 ######################################
 import streamlit as st 
-from common.graph.model import get_response_from_model
+from common.langgraph.run import response_of_llm
 from common.screen.history import create_history
+from common.screen.display import print_history_message, print_message
 
 st.title("챗봇 서비스")
 
@@ -11,6 +12,7 @@ st.title("챗봇 서비스")
 # 챗봇 히스토리
 ######################################
 create_history()
+print_history_message()
 
 ######################################
 # 챗봇 - 사용자의 문의
@@ -21,11 +23,10 @@ if question is not None:
         "role":"user",
         "content":question
     }
+    # 화면에 추가 
+    print_message(user_msg["role"], user_msg["content"])
     # 이력에 추가 
     st.session_state.messages.append(user_msg)
-    # 화면에 추가 
-    with st.chat_message(user_msg["role"]):
-        st.markdown(user_msg["content"]) 
 
     ######################################
     # 챗봇 - AI 답변
@@ -34,14 +35,11 @@ if question is not None:
         "role":"assistant",
         "content":""
     }
-    # 화면에 추가
-    with st.chat_message(ai_msg["role"]):
-        message = st.empty()
-        # 모델 답변 
-        for res_token in get_response_from_model(question):
-            ai_msg["content"] += res_token
-            message.markdown(ai_msg["content"])
+    # 화면에 추가 
+    response = print_message(ai_msg["role"], response_of_llm(question))
+    ai_msg["content"] = response
     
-        # 이력에 추가
-        st.session_state.messages.append(ai_msg)
+    # 이력에 추가
+    st.session_state.messages.append(ai_msg)
+        
     

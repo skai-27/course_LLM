@@ -5,22 +5,14 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-
-from langchain_openai import ChatOpenAI
+import streamlit as st
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
-import streamlit as st 
 import time
+from .graph import create_graph
 
-@st.cache_resource
-def get_model(model:str="gpt-5-nano"):
-    return ChatOpenAI(
-        model="gpt-5-nano",
-        reasoning_effort="high",        # 논리성 강화
-    )
 
-def get_response_from_model(question:str):
-    # 채팅한 이력 추가 
+def response_of_llm(question:str):
     prompts = [] 
     for msg in st.session_state.messages:
       prompts.append(tuple(msg.values()))
@@ -29,8 +21,12 @@ def get_response_from_model(question:str):
     prompts += [("user", "{user_input}")] 
     chat_prompt = ChatPromptTemplate.from_messages(prompts)
 
-    chain = chat_prompt | get_model() | StrOutputParser()
+    chain = chat_prompt | create_graph() | StrOutputParser()
     
-    for token in chain.stream({"user_input": question}):
-        yield token 
+    for token in chain.stream({"user_input": question}, stream_mode="values"):
+        # token이 dict일 수도 있으므로, 문자열만 yield
+        if isinstance(token, dict):
+            token = token.get("output", str(token))
+        yield token
         time.sleep(0.05)
+
