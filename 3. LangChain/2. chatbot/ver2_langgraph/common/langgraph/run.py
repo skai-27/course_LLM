@@ -21,12 +21,9 @@ def response_of_llm(question:str):
     prompts += [("user", "{user_input}")] 
     chat_prompt = ChatPromptTemplate.from_messages(prompts)
 
-    chain = chat_prompt | create_graph() | StrOutputParser()
-    
-    for token in chain.stream({"user_input": question}, stream_mode="values"):
-        # token이 dict일 수도 있으므로, 문자열만 yield
-        if isinstance(token, dict):
-            token = token.get("output", str(token))
-        yield token
-        time.sleep(0.05)
+    chain = chat_prompt | create_graph()
+    response = chain.invoke({"user_input": question}, stream_mode="values")
+    for token in response["messages"][-1].content:
+      yield token
+      time.sleep(0.05) 
 
