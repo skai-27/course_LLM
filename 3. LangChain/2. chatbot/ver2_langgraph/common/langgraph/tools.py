@@ -1,13 +1,11 @@
-import streamlit as st
-
 import subprocess 
 import sys
 from datetime import datetime
 from langchain_tavily import TavilySearch
 from langchain_core.tools import tool
-from langchain_openai import ChatOpenAI
+from .model import get_model
 
-@st.cache_resource
+
 def __get_tavily_search():
     return TavilySearch(
         max_results=3,
@@ -23,24 +21,18 @@ def __get_tavily_search():
         exclude_domains=None            # 필요하면 제외 도메인 지정 가능
     )
 
-@st.cache_resource
-def __get_model(model:str="gpt-5-nano"):
-    return ChatOpenAI(
-        model=model,
-        reasoning_effort="high",        # 논리성 강화
-    )
+
 
 @tool
 def search_weather(city) -> str:
     """특정 도시의 현재 날씨 정보를 검색합니다."""
-    
-    try:
-        
+    print("[호출] search_weather")
+    try:    
         search_query = f"{city} 형재 날씨 온도"
         tavily_search = __get_tavily_search()
         result_weather = tavily_search.invoke(search_query)
 
-        answer = __get_model().invoke(f"{result_weather['answer']} 설명없이 한문장으로 번역해줘.")
+        answer = get_model().invoke(f"{result_weather['answer']} 설명없이 한문장으로 번역해줘.")
         weather_info = f"""
         {city} 날씨 정보:
         {answer.content}
@@ -55,6 +47,7 @@ def search_weather(city) -> str:
 @tool
 def calculator(expression: str) -> str:
     """수학 계산을 수행하는 도구입니다."""
+    print("[호출] calculator")
     try:
         # 안전을 위해 허용된 문자만 통과
         allowed_chars = "0123456789+-*/.%() "
@@ -84,6 +77,7 @@ def calculator(expression: str) -> str:
 @tool
 def get_current_time() -> str:
     """현재 시간을 조회합니다."""
+    print("[호출] get_current_time")
     now = datetime.now()
     return f"현재 시간: {now.strftime("%Y년 %m월 %d일 %H시 %M분")}"
 

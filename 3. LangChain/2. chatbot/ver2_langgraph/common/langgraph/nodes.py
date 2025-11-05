@@ -4,7 +4,7 @@ import json
 from langchain_core.messages import ToolMessage
 
 from .state import AgentState
-from .model import get_model_with_tools
+from .model import get_model
 from .tools import search_weather, calculator, get_current_time
 
 # AI 모델 호출 노드 정의
@@ -30,7 +30,8 @@ def call_model(state: AgentState, config: RunnableConfig):
     messages = [system_prompt] + state["messages"]
 
     # AI 모델 호출
-    response = get_model_with_tools().invoke(messages, config)
+    response = get_model(
+        tools=[search_weather, calculator, get_current_time]).invoke(messages, config)
 
     # 응답을 리스트로 반환 (기존 메시지 리스트에 추가되도록)
     return {"messages": [response]}
