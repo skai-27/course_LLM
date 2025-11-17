@@ -1,13 +1,13 @@
 # Qdrant Docker Compose 사용 가이드
 
-## 📋 목차
+## 목차
 1. [시작하기](#시작하기)
 2. [서비스 관리](#서비스-관리)
 3. [연결 정보](#연결-정보)
 4. [데이터 백업](#데이터-백업)
 5. [문제 해결](#문제-해결)
 
-## 🚀 시작하기
+## 시작하기
 
 ### 1. Qdrant 시작
 
@@ -33,9 +33,8 @@ curl http://localhost:6333/healthz
 
 브라우저에서 다음 주소로 접속:
 - **Dashboard**: http://localhost:6333/dashboard
-- **API 문서**: http://localhost:6333/docs
 
-## 🔧 서비스 관리
+## 서비스 관리
 
 ### Qdrant 중지
 
@@ -100,7 +99,7 @@ vectorstore = QdrantVectorStore.from_documents(
 )
 ```
 
-## 💾 데이터 백업
+## 데이터 백업
 
 ### 스냅샷 생성
 
@@ -119,7 +118,7 @@ curl "http://localhost:6333/collections/{collection_name}/snapshots"
 
 이 폴더들을 정기적으로 백업하세요!
 
-## 🔐 보안 설정 (옵션)
+## 보안 설정 (옵션)
 
 ### API 키 설정
 
@@ -141,7 +140,7 @@ docker-compose down
 docker-compose up -d
 ```
 
-## 🛠️ 문제 해결
+## 문제 해결
 
 ### 포트 충돌
 
@@ -181,7 +180,7 @@ du -sh qdrant_storage
 du -sh qdrant_snapshots
 ```
 
-## 📊 성능 모니터링
+## 성능 모니터링
 
 ### 메모리 및 CPU 사용량 확인
 
@@ -200,13 +199,13 @@ curl http://localhost:6333/collections
 curl http://localhost:6333/collections/{collection_name}
 ```
 
-## 📚 추가 리소스
+## 추가 리소스
 
 - [Qdrant 공식 문서](https://qdrant.tech/documentation/)
 - [Qdrant API 레퍼런스](https://qdrant.github.io/qdrant/redoc/index.html)
 - [LangChain Qdrant 통합](https://python.langchain.com/docs/integrations/vectorstores/qdrant)
 
-## 💡 팁
+## 팁
 
 1. **프로덕션 환경**: API 키를 반드시 설정하세요
 2. **백업**: 정기적으로 스냅샷을 생성하고 외부에 저장하세요
