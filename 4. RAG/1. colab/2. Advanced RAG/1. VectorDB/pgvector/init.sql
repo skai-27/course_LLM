@@ -5,7 +5,7 @@ CREATE EXTENSION IF NOT EXISTS vector;
 CREATE TABLE documents (
     id SERIAL PRIMARY KEY,
     content TEXT,                 -- 문서 내용
-    embedding VECTOR(1536),       -- OpenAI 등 임베딩 크기에 맞춤
+    embedding VECTOR(1024),       -- 임베딩 크기에 맞춤
     metadata JSONB                -- 메타데이터
 );
 
