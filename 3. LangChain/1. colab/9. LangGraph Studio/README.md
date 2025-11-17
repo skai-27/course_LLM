@@ -9,9 +9,28 @@ style: |
 marp: true
 paginate: true
 ---
-# LangGraph Studio 프로젝트
+# [LangGraph Studio 프로젝트](https://docs.langchain.com/oss/python/langgraph/interrupts#using-langgraph-studio)
 
 이 프로젝트는 LangGraph를 사용하여 간단한 워크플로우 그래프를 구현하고 LangGraph Studio에서 시각화하는 예제입니다.
+
+---
+## LangSmith vs LangGraph Studio
+
+| 구분 | LangSmith | LangGraph Studio |
+|------|-----------|------------------|
+| **주요 목적** | LLM 앱 모니터링 및 평가 | LangGraph 앱 개발 및 디버깅 |
+| **핵심 기능** | - 프로덕션 모니터링<br>- 추적(tracing)<br>- 데이터셋 관리<br>- 성능 평가 | - 시각적 그래프 편집<br>- 실시간 디버깅<br>- 스텝별 실행 확인<br>- 로컬 개발 환경 |
+| **사용 시점** | 앱 배포 후 모니터링<br>평가 및 테스트 | 개발 단계<br>그래프 설계 및 디버깅 |
+| **대상** | 모든 LLM 애플리케이션 | LangGraph 프로젝트 전용 |
+| **가격** | 무료/유료 플랜 | 무료 (오픈소스) |
+
+---
+### 간단 요약
+
+- **LangSmith** = LLM 앱을 "관찰하고 평가"하는 도구
+- **LangGraph Studio** = LangGraph 앱을 "만들고 디버깅"하는 도구
+
+두 도구는 서로 보완적이며, 함께 사용하면 개발부터 운영까지 전체 라이프사이클을 커버할 수 있습니다.
 
 ---
 ## 프로젝트 구조
@@ -125,7 +144,3 @@ LangGraph Studio에서 다음과 같이 테스트할 수 있습니다:
 3. 각 노드별 실행 시간 및 결과 분석
 4. 에러 로그 및 디버깅 정보 확인
 
----
-## 참고문서
-- https://langchain-ai.github.io/langgraph/tutorials/langgraph-platform/local-server/ 
-- https://github.com/langchain-ai/new-langgraph-project/tree/main
