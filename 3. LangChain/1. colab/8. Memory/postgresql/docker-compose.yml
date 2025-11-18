@@ -21,3 +21,7 @@ services:
     volumes:
       # PostgreSQL 데이터 영속화 (컨테이너 재시작 시에도 데이터 유지)
       - ./database:/var/lib/postgresql/data
+
+      # 초기화 SQL 스크립트 자동 실행
+      # docker-compose 실행 시 init.sql을 이용해 테이블 생성/pgvector 확장 자동 설치
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
