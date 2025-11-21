@@ -15,4 +15,5 @@ torch==2.9.1
 sentence-transformers==5.1.2
 
 # VectorDB 패키지 
-langchain-chroma==1.0.0
+psycopg2-binary==2.9.11
+langchain-postgres==0.0.16
