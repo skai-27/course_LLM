@@ -24,4 +24,6 @@ langchain-qdrant==1.1.0  # LangChain Qdrant 통합
 langchain-milvus==0.3.0
 
 # Elasticsearch
-langchain-elasticsearch
+# langchain-elasticsearch -> langchain v1과 호환 이슈 
+# elasticsearch==9.2.0  # 연결 문제로 8.x로 다운그레이드
+elasticsearch==8.13.0
