@@ -16,7 +16,8 @@ langchain-openai==1.0.3                   # OpenAI 모델 통합
 psycopg2-binary==2.9.11
 langchain-postgres==0.0.16
 
-
+# Tools 패키지
+langchain-tavily==0.2.12 #  AI가 웹 검색을 할 수 있게 해주는 도구
 
 
 
