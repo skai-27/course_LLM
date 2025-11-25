@@ -22,3 +22,6 @@ langchain-qdrant==1.1.0  # LangChain Qdrant 통합
 # Milvus
 # pymilvus
 langchain-milvus==0.3.0
+
+# Elasticsearch
+langchain-elasticsearch
