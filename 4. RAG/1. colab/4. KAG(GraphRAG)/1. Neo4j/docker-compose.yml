@@ -19,10 +19,10 @@ services:
     environment:
       # 인증 정보: 사용자명/비밀번호 (기본값: neo4j/test1234)
       - NEO4J_AUTH=neo4j/test1234
-      # 설치할 플러그인 (APOC: 그래프 알고리즘 및 유틸리티 함수 제공)
-      - NEO4J_PLUGINS=["apoc"]
-      # APOC 플러그인의 모든 함수를 제한 없이 사용 가능하도록 설정
-      - NEO4J_dbms_security_procedures_unrestricted=apoc.*
+      # 설치할 플러그인 (APOC: 그래프 알고리즘 및 유틸리티 함수 제공, GDS: Graph Data Science)
+      - NEO4J_PLUGINS=["apoc", "graph-data-science"]
+      # APOC 및 GDS 플러그인의 모든 함수를 제한 없이 사용 가능하도록 설정
+      - NEO4J_dbms_security_procedures_unrestricted=apoc.*,gds.*
       # 메모리 설정: 초기 힙 메모리 크기 (512MB)
       - NEO4J_dbms_memory_heap_initial__size=512m
       # 메모리 설정: 최대 힙 메모리 크기 (2GB)
