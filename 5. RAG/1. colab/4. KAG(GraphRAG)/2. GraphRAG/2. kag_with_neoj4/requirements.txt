@@ -13,9 +13,8 @@ langchain-ollama==1.0.0                    # Ollama 모델 통합
 langchain-openai==1.0.3                   # OpenAI 모델 통합 
 
 # VectorDB 패키지 
-# PostgreSQL + pgvector
-psycopg2-binary==2.9.11
-langchain-postgres==0.0.16
+# langchain-elasticsearch -> langchain v1과 호환 이슈 
+elasticsearch==8.13.0
 
 # Neo4j with langchain
 langchain-neo4j==0.6.0
