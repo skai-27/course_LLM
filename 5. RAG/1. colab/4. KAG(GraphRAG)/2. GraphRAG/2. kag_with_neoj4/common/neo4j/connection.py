@@ -1,7 +1,8 @@
 from neo4j import GraphDatabase
 from langchain_core.documents import Document
+from langchain_ollama import OllamaEmbeddings
 
-from .query_templates import CypherQueryTemplates
+from query_templates import CypherQueryTemplates
 
 class Singleton(type):
     _instances = {}
@@ -15,8 +16,9 @@ class Singleton(type):
 class Neo4jConnection(metaclass=Singleton):
     """Neo4j 데이터베이스 연결 및 작업을 위한 클래스"""
     
-    def __init__(self, uri, user, password):
-        self.driver = GraphDatabase.driver(self.uri, auth=(self.user, self.password))
+    def __init__(self, uri, user, password, embedding_model="qwen3-embedding:0.6b"):
+        self.driver = GraphDatabase.driver(uri, auth=(user, password))
+        self.embedding_model = OllamaEmbeddings(model=embedding_model)
         print("Neo4j 연결 성공!")
 
     
@@ -29,37 +31,46 @@ class Neo4jConnection(metaclass=Singleton):
 
         with self.driver.session() as session:
             result = session.run(query, parameters)
-            return [r.data() for r in result]
+            return [record for record in result]
+           
 
     def execute_query_templates(self, template:str, parameters:dict=None) -> list:
         if template not in CypherQueryTemplates.__members__:
             raise Exception("[Neo4jConnection] 올바른 template이 아닙니다.")
 
-        query = CypherQueryTemplates[template].build(**parameters)
-        results = self.execute_query(query)
+        cypher_query = CypherQueryTemplates[template].build(**parameters)
+        results = self.execute_query(cypher_query)
 
-        return [
-            Document(
-                page_content=f"""
-                [뉴스 제목] {result['title']}
-                [뉴스 내용] 
-                {result['content']}
-                """,
+        documents = []
+        for result in results:
+            doc = Document(
+                page_content=f"[뉴스 제목] {result['title']}\n[뉴스 내용]\n{result['content']}",
                 metadata={
                     "publisher_name":result['publisher_name'],
                     "reporter_name":result['reporter_name'],
                     "publish_date":result['publish_date'],
                     "source":result['news_link'],
                 }
-            ) for result in results
-        ]
+            )
+            documents.append((doc, result['score']))
+
+        return documents
 
 
 
 if __name__ == "__main__":
-    Neo4jConnection(
+    conn = Neo4jConnection(
         uri="bolt://localhost:7687",
         user="neo4j",
         password="test1234"
     )
+
+    template="NEWS_BY_CATEGORY"
+    parameters={
+        "category_name":"경제",
+        "limit_no":3
+    }
+    docs = conn.execute_query_templates(template, parameters)
+    for doc in docs:
+        print(doc)
 
