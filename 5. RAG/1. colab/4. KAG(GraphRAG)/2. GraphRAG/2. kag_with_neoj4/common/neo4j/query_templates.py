@@ -3,12 +3,14 @@ from enum import Enum
 class CypherQueryTemplates(Enum):
     """다양한 질문 유형을 Enum으로 관리하는 Cypher 템플릿"""
 
+    # 질문 분류(카테고리/언론사/기자)에 따라 재사용할 템플릿 키
     NEWS_BY_CATEGORY = "news_by_category"
     NEWS_BY_PUBLISHER = "news_by_publisher"
     NEWS_BY_REPORTER = "news_by_reporter"
 
     def __return_template(self) -> str:
         """Score는 해당 노드가 다른 노드들과 얼마나 많은 관계(edge)를 가지고 있는지를 0~1 사이로 정규화한 값"""
+        # 각 조건에서 공통으로 사용하는 projection + score 계산 블록
 
         return """
             WITH n, p, r,
@@ -52,8 +54,10 @@ class CypherQueryTemplates(Enum):
         if self is CypherQueryTemplates.NEWS_BY_CATEGORY:
             category_name = kwargs["category_name"]
             limit_no = kwargs["limit_no"]
+            # 카테고리 기준으로 매칭한 뒤 공통 score 템플릿 적용
             return f"""
-            MATCH (n:News)-[:BELONGS_TO]->(c:Category {{name: "{category_name}"}})
+            MATCH (n:News)-[:BELONGS_TO]->(c:Category)
+            WHERE c.name =~ '(?i).*{category_name}.*'
             MATCH (n)-[:PUBLISHED_BY]->(p:Publisher)
             MATCH (n)-[:WRITTEN_BY]->(r:Reporter)
             
@@ -64,8 +68,10 @@ class CypherQueryTemplates(Enum):
         if self is CypherQueryTemplates.NEWS_BY_PUBLISHER:
             publisher_name = kwargs["publisher_name"]
             limit_no = kwargs["limit_no"]
+            # 특정 언론사가 발행한 뉴스들을 스코어링
             return f"""
-            MATCH (n:News)-[:PUBLISHED_BY]->(p:Publisher {{name: "{publisher_name}"}})
+            MATCH (n:News)-[:PUBLISHED_BY]->(p:Publisher)
+            WHERE p.name =~ '(?i).*{publisher_name}.*'
             MATCH (n)-[:BELONGS_TO]->(c:Category)
             MATCH (n)-[:WRITTEN_BY]->(r:Reporter)
             
@@ -76,8 +82,10 @@ class CypherQueryTemplates(Enum):
         if self is CypherQueryTemplates.NEWS_BY_REPORTER:
             reporter_name = kwargs["reporter_name"]
             limit_no = kwargs["limit_no"]
+            # 기자 기준으로 취재한 뉴스들을 노멀라이즈된 점수로 반환
             return f"""
-            MATCH (n:News)-[:WRITTEN_BY]->(r:Reporter {{name: "{reporter_name}"}})
+            MATCH (n:News)-[:WRITTEN_BY]->(r:Reporter)
+            WHERE r.name =~ '(?i).*{reporter_name}.*'
             MATCH (n)-[:BELONGS_TO]->(c:Category)
             MATCH (n)-[:PUBLISHED_BY]->(p:Publisher)
             
@@ -88,7 +96,7 @@ class CypherQueryTemplates(Enum):
         raise ValueError(f"지원하지 않는 템플릿: {self}")
 
 if __name__ == "__main__":
-    # 카테고리로 뉴스 검색
+    # 사용 예시: 카테고리로 뉴스 검색
     query = CypherQueryTemplates.NEWS_BY_CATEGORY.build(
         category_name="경제", limit_no=3)
     print(query)
