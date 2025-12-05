@@ -10,6 +10,7 @@ langchain-community==0.4 # LangChain 커뮤니티 확장
 langsmith==0.4.38 # LangSmith 프로젝트 로그 관리
 langchain-experimental==0.0.42 # 새로운 기능을 미리 사용해볼 수 있는 패키지
 langgraph==1.0.1
+langgraph-swarm==0.1.0
 
 # 모델별 패키지
 langchain-openai==1.0.1 # OpenAI 모델 통합
