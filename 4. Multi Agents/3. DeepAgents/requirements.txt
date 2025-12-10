@@ -13,3 +13,7 @@ langchain-openai==1.1.1
 
 # Tools 패키지
 langchain-tavily==0.2.13
+
+# PostgreSQL 패키지
+psycopg[binary]==3.3.2
+
