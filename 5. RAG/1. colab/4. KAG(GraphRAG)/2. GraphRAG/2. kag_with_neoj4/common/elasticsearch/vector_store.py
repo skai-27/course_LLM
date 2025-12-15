@@ -44,20 +44,20 @@ class ElasticsearchVectorStore(VectorStore, metaclass=Singleton):
                 "bool": {
                 "should": [
                     {
-                    "match": {
-                        "text": {
-                        "query": query,
-                        "boost": 1.0
+                        "match": {
+                            "text": {
+                            "query": query,
+                            "boost": 1.0
+                            }
                         }
-                    }
                     },
                     {
-                    "match_phrase": {
-                        "text": {
-                        "query": query,
-                        "boost": 2.0
+                        "match_phrase": {
+                            "text": {
+                            "query": query,
+                            "boost": 2.0
+                            }
                         }
-                    }
                     }
                 ]
                 }
