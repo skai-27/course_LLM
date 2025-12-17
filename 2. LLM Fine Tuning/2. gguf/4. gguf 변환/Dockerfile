@@ -1,24 +1,30 @@
-FROM ubuntu:22.04
+# ==================================================
+# Base Image (CPU Runtime)
+# ==================================================
+FROM runpod/base:1.0.2-ubuntu2204
 
 ENV DEBIAN_FRONTEND=noninteractive
+ENV PYTHONUNBUFFERED=1
+
 WORKDIR /workspace
 
 # ===============================
 # System packages (OS pin)
 # ===============================
 RUN apt-get update && apt-get install -y \
-    git=1:2.34.* \
-    cmake=3.22.* \
+    git \
+    cmake \
     build-essential \
-    python3.10 \
+    python3.11 \
     python3-pip \
-    python3.10-dev \
+    python3.11-dev \
     wget \
     curl \
     libcurl4-openssl-dev \
+    vim \
     && rm -rf /var/lib/apt/lists/*
 
-RUN ln -s /usr/bin/python3 /usr/bin/python
+RUN ln -sf /usr/bin/python3 /usr/bin/python
 
 # ===============================
 # llama.cpp (latest stable)
@@ -26,37 +32,83 @@ RUN ln -s /usr/bin/python3 /usr/bin/python
 RUN git clone https://github.com/ggerganov/llama.cpp.git /opt/llama.cpp
 WORKDIR /opt/llama.cpp
 
-# 최신 안정 버전 사용 (gguf 0.6.0 호환)
-# git checkout 생략하여 최신 master 사용
-
 RUN cmake -B build \
     && cmake --build build --config Release
 
 # ===============================
+# Python base
+# ===============================
+RUN pip install --upgrade pip
+
+# ===============================
 # Python GGUF stack (version pin)
 # ===============================
-RUN pip install --upgrade pip==24.0
-
 RUN pip install \
     gguf==0.6.0 \
     transformers==4.40.2 \
     sentencepiece==0.1.99 \
     safetensors==0.4.3
 
-WORKDIR /workspace
-
 # ===============================
-# Jupyter
+# Jupyter kernel ONLY (server 실행 안 함)
 # ===============================
 RUN pip install \
-jupyterlab==4.1.8 \
-notebook==7.1.3 \
-ipykernel==6.29.4
+    ipykernel==6.29.4 \
+    jupyter-client==8.6.1 \
+    nbformat==5.10.4
 
-EXPOSE 8888
+RUN python -m ipykernel install \
+    --name llama-cpp \
+    --display-name "Python (llama.cpp)"
+
+# ==================================================
+# VSCode Server (code-server)
+# ==================================================
+ENV HOME=/root
+
+RUN curl -fsSL https://code-server.dev/install.sh | sh \
+    && /usr/bin/code-server --version
+
+# ==================================================
+# VSCode extensions (강의 필수)
+# ==================================================
+RUN /usr/bin/code-server \
+    --install-extension ms-python.python \
+    --install-extension ms-toolsai.jupyter \
+    --install-extension ms-python.vscode-pylance
+
+# ===============================
+# Runtime cache (Volume friendly)
+# ===============================
+ENV XDG_DATA_HOME=/workspace/.vscode
+ENV XDG_CONFIG_HOME=/workspace/.config
+ENV XDG_CACHE_HOME=/workspace/.cache
+
+# ===============================
+# Permissions
+# ===============================
+RUN chmod -R 777 /workspace
+
+# ===============================
+# Expose VSCode Server
+# ===============================
+EXPOSE 8080
+
+# ==================================================
+# 강의자료 복사
+# ==================================================
+COPY lectures/ /opt/lectures/
 
 # ==================================================
 # Entrypoint
 # ==================================================
-CMD ["jupyter", "lab", "--ip=0.0.0.0", "--port=8888", "--no-browser", "--allow-root", "--NotebookApp.token=''", "--NotebookApp.password=''"]
+CMD ["bash", "-c", "\
+if [ ! -d /workspace/lectures ]; then \
+  cp -r /opt/lectures /workspace/lectures; \
+fi && \
+code-server /workspace \
+  --bind-addr 0.0.0.0:8080 \
+  --auth none \
+  --disable-telemetry \
+"]
 

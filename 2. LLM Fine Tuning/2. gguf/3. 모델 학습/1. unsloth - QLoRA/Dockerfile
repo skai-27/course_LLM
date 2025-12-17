@@ -1,7 +1,8 @@
 # ==================================================
 # Base Image (CUDA pin)
 # ==================================================
-FROM nvidia/cuda:12.1.1-cudnn8-runtime-ubuntu22.04
+# RunPod 공식 PyTorch 2.8.0 이미지
+FROM runpod/pytorch:2.8.0-py3.11-cuda12.8.1-cudnn-devel-ubuntu22.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
@@ -11,90 +12,143 @@ ENV TORCH_CUDA_ARCH_LIST="8.0 8.6 8.9 9.0"
 WORKDIR /workspace
 
 # ==================================================
-# System packages (OS-level pin)
+# System packages
 # ==================================================
 RUN apt-get update && apt-get install -y \
-    git=1:2.34.* \
+    git \
     curl \
     wget \
     vim \
     build-essential \
     ninja-build \
     libaio-dev \
-    python3.10 \
+    python3.11 \
     python3-pip \
-    python3.10-dev \
+    python3.11-dev \
     && rm -rf /var/lib/apt/lists/*
 
-RUN ln -s /usr/bin/python3 /usr/bin/python
+RUN ln -sf /usr/bin/python3 /usr/bin/python
 
 # ==================================================
-# Python base (pip pin)
+# Python base
 # ==================================================
 RUN pip install --upgrade \
-    pip==24.0 \
-    setuptools==69.5.1 \
-    wheel==0.43.0
+    pip \
+    setuptools \
+    wheel
 
 # ==================================================
-# PyTorch (CUDA 12.1)
+# PyTorch (CUDA 12.1 공식 wheel)
 # ==================================================
-RUN pip install \
-    torch==2.2.2 \
-    torchvision==0.17.2 \
-    torchaudio==2.2.2 \
-    --index-url https://download.pytorch.org/whl/cu121
+# RUN pip install \
+#     torch==2.8.0 \
+#     torchvision==0.23.0 \
+#     torchaudio==2.8.0 \
+#     --index-url https://download.pytorch.org/whl/cu128
 
 # ==================================================
-# HuggingFace core stack (Unsloth compatible)
+# HuggingFace core stack
 # ==================================================
 RUN pip install \
-    transformers==4.40.2 \
-    accelerate==0.30.1 \
-    datasets==2.19.0 \
-    sentencepiece==0.1.99 \
-    protobuf==4.25.3 \
-    scipy==1.11.4 \
-    einops==0.7.0 \
-    packaging==24.0 \
-    safetensors==0.4.3
+    transformers==4.57.3 \
+    accelerate==1.12.0 \
+    datasets==4.3.0 \
+    sentencepiece==0.2.1 \
+    protobuf==6.33.2 \
+    scipy==1.16.3 \
+    einops==0.8.1 \
+    packaging==24.2 \
+    safetensors==0.7.0
 
 # ==================================================
-# Unsloth stack (핵심)
+# Unsloth stack
 # ==================================================
 RUN pip install \
-    unsloth==2024.12.12 \
+    unsloth==2025.12.5 \
+    unsloth-zoo==2025.12.4 \
     trl==0.24.0 \
     peft==0.18.0 \
     bitsandbytes==0.49.0 \
     xformers==0.0.33
 
 # ==================================================
-# Optional (강의/실험 편의)
+# Optional (강의 편의)
 # ==================================================
 RUN pip install \
-    wandb==0.17.0 \
-    tensorboard==2.16.2 \
-    rich==13.7.1
+    wandb==0.23.1 \
+    tensorboard==2.20.0 \
+    rich==14.2.0
 
 # ==================================================
-# Runtime cache locations
+# Jupyter kernel only (NOT server)
+# ==================================================
+RUN pip install \
+    ipykernel==6.29.5 \
+    jupyter-client==8.6.3 \
+    nbformat==5.10.4
+
+# Python 커널 등록
+RUN python -m ipykernel install \
+    --name unsloth \
+    --display-name "Python (Unsloth)"
+
+# ==================================================
+# VSCode Server (code-server)
+# ==================================================
+ENV HOME=/root
+
+RUN curl -fsSL https://code-server.dev/install.sh | sh \
+    && /usr/bin/code-server --version
+
+# ==================================================
+# VSCode extensions
+# ==================================================
+# RUN mkdir -p /root/.local/share/code-server && \
+#     /usr/bin/code-server \
+#     --user-data-dir /root/.local/share/code-server \
+#     --install-extension ms-python.python || true && \
+#     /usr/bin/code-server \
+#     --user-data-dir /root/.local/share/code-server \
+#     --install-extension ms-toolsai.jupyter || true && \
+#     /usr/bin/code-server \
+#     --user-data-dir /root/.local/share/code-server \
+#     --install-extension ms-python.vscode-pylance || true
+
+# ==================================================
+# Runtime cache (RunPod Volume friendly)
 # ==================================================
 ENV HF_HOME=/workspace/.cache/huggingface
 ENV TRANSFORMERS_CACHE=/workspace/.cache/huggingface
 ENV WANDB_DIR=/workspace/.cache/wandb
 
-# ===============================
-# Jupyter
-# ===============================
-RUN pip install \
-jupyterlab==4.1.8 \
-notebook==7.1.3 \
-ipykernel==6.29.4
+ENV XDG_DATA_HOME=/workspace/.vscode
+ENV XDG_CONFIG_HOME=/workspace/.config
+ENV XDG_CACHE_HOME=/workspace/.cache
 
-EXPOSE 8888
+# ==================================================
+# Permissions
+# ==================================================
+RUN chmod -R 777 /workspace
+
+# ==================================================
+# Expose VSCode Server
+# ==================================================
+EXPOSE 8080
+
+# ==================================================
+# 강의자료 복사
+# ==================================================
+COPY lectures/ /opt/lectures/
 
 # ==================================================
 # Entrypoint
 # ==================================================
-CMD ["jupyter", "lab", "--ip=0.0.0.0", "--port=8888", "--no-browser", "--allow-root", "--NotebookApp.token=''", "--NotebookApp.password=''"]
+CMD ["bash", "-c", "\
+if [ ! -d /workspace/lectures ]; then \
+  cp -r /opt/lectures /workspace/lectures; \
+fi && \
+code-server /workspace \
+  --bind-addr 0.0.0.0:8080 \
+  --auth none \
+  --disable-telemetry \
+"]

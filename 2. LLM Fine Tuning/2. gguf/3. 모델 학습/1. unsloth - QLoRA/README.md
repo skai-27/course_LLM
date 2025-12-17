@@ -1,12 +1,12 @@
 # Docker Hub에 배포하는 명령어
 ```shell
-docker build -t 도커허브아이디/unsloth-runpod:2024.12.12 .
-docker push 도커허브아이디/unsloth-runpod:2024.12.12
+docker build -t goodwon593/unsloth-runpod:2025.12.5 .
+docker push goodwon593/unsloth-runpod:2025.12.5
 
 # GPU용
-docker run -it --rm --gpus all -p 8888:8888 -v ./workspace:/workspace 도커허브아이디/unsloth-runpod:2024.12.12
+docker run -it --rm --gpus all -p 8080:8080 -v ./workspace:/workspace goodwon593/unsloth-runpod:2025.12.5
 # CPU용
-docker run -it --rm -p 8888:8888 -v ./workspace/workspace:/workspace 도커허브아이디/unsloth-runpod:2024.12.12
+docker run -it --rm -p 8080:8080 -v ./workspace/workspace:/workspace goodwon593/unsloth-runpod:2025.12.5
 ```
 
 ---
