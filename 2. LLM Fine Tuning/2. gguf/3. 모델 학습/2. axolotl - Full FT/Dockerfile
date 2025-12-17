@@ -1,5 +1,5 @@
 # ==================================================
-# Base Image (CUDA pin)
+# Base Image (CUDA + cuDNN pin)
 # ==================================================
 FROM nvidia/cuda:12.1.1-cudnn8-runtime-ubuntu22.04
 
@@ -14,14 +14,16 @@ WORKDIR /workspace
 # System packages (OS-level pin)
 # ==================================================
 RUN apt-get update && apt-get install -y \
-    git=1:2.34.1-1ubuntu1.10 \
+    git=1:2.34.* \
     curl \
     wget \
     vim \
     build-essential \
-    python3=3.10.6-1~22.04 \
+    ninja-build \
+    libaio-dev \
+    python3.10 \
     python3-pip \
-    python3-dev \
+    python3.10-dev \
     && rm -rf /var/lib/apt/lists/*
 
 RUN ln -s /usr/bin/python3 /usr/bin/python
@@ -35,7 +37,7 @@ RUN pip install --upgrade \
     wheel==0.43.0
 
 # ==================================================
-# PyTorch (CUDA 12.1)
+# PyTorch (CUDA 12.1 공식 wheel)
 # ==================================================
 RUN pip install \
     torch==2.2.2 \
@@ -44,7 +46,7 @@ RUN pip install \
     --index-url https://download.pytorch.org/whl/cu121
 
 # ==================================================
-# HuggingFace core stack (Unsloth compatible)
+# Core HF stack (Axolotl 검증 조합)
 # ==================================================
 RUN pip install \
     transformers==4.40.2 \
@@ -54,18 +56,19 @@ RUN pip install \
     protobuf==4.25.3 \
     scipy==1.11.4 \
     einops==0.7.0 \
+    pydantic==2.7.1 \
     packaging==24.0 \
     safetensors==0.4.3
 
 # ==================================================
-# Unsloth stack (핵심)
+# Axolotl + Training stack (핵심)
 # ==================================================
 RUN pip install \
-    unsloth==2024.6 \
-    trl==0.8.6 \
-    peft==0.10.0 \
-    bitsandbytes==0.43.1 \
-    xformers==0.0.25
+    peft==0.13.2 \
+    trl==0.12.0 \
+    bitsandbytes==0.44.1 \
+    deepspeed==0.14.2 \
+    axolotl==0.5.0
 
 # ==================================================
 # Optional (강의/실험 편의)
@@ -76,7 +79,7 @@ RUN pip install \
     rich==13.7.1
 
 # ==================================================
-# Runtime cache locations
+# Runtime cache locations (RunPod Volume friendly)
 # ==================================================
 ENV HF_HOME=/workspace/.cache/huggingface
 ENV TRANSFORMERS_CACHE=/workspace/.cache/huggingface
@@ -86,9 +89,9 @@ ENV WANDB_DIR=/workspace/.cache/wandb
 # Jupyter
 # ===============================
 RUN pip install \
-jupyterlab==4.1.8 \
-notebook==7.1.3 \
-ipykernel==6.29.4
+    jupyterlab==4.1.8 \
+    notebook==7.1.3 \
+    ipykernel==6.29.4
 
 EXPOSE 8888
 

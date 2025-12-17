@@ -7,26 +7,27 @@ WORKDIR /workspace
 # System packages (OS pin)
 # ===============================
 RUN apt-get update && apt-get install -y \
-    git=1:2.34.1-1ubuntu1.10 \
-    cmake=3.22.1-1ubuntu1.22.04.2 \
+    git=1:2.34.* \
+    cmake=3.22.* \
     build-essential \
-    python3=3.10.6-1~22.04 \
+    python3.10 \
     python3-pip \
-    python3-dev \
+    python3.10-dev \
     wget \
     curl \
+    libcurl4-openssl-dev \
     && rm -rf /var/lib/apt/lists/*
 
 RUN ln -s /usr/bin/python3 /usr/bin/python
 
 # ===============================
-# llama.cpp (commit pin)
+# llama.cpp (latest stable)
 # ===============================
 RUN git clone https://github.com/ggerganov/llama.cpp.git /opt/llama.cpp
 WORKDIR /opt/llama.cpp
 
-# 강의용으로 안정 검증된 커밋
-RUN git checkout 3a6d4e9
+# 최신 안정 버전 사용 (gguf 0.6.0 호환)
+# git checkout 생략하여 최신 master 사용
 
 RUN cmake -B build \
     && cmake --build build --config Release
