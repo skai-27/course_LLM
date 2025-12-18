@@ -6,7 +6,7 @@ docker push goodwon593/unsloth-runpod:2025.12.5
 # GPU용
 docker run -it --rm --gpus all -p 8080:8080 -v ./workspace:/workspace goodwon593/unsloth-runpod:2025.12.5
 # CPU용
-docker run -it --rm -p 8080:8080 -v ./workspace/workspace:/workspace goodwon593/unsloth-runpod:2025.12.5
+docker run -it --rm -p 8080:8080 -v ./workspace:/workspace goodwon593/unsloth-runpod:2025.12.5
 ```
 
 ---

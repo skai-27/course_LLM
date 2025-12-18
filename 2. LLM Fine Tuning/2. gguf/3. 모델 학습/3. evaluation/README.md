@@ -6,7 +6,7 @@ docker push 도커허브아이디/lm-eval-runpod:0.4.3
 # GPU용
 docker run -it --rm --gpus all -p 8888:8888 -v ./workspace:/workspace 도커허브아이디/lm-eval-runpod:0.4.3
 # CPU용
-docker run -it --rm -p 8888:8888 -v ./workspace/workspace:/workspace 도커허브아이디/lm-eval-runpod:0.4.3
+docker run -it --rm -p 8888:8888 -v ./workspace:/workspace 도커허브아이디/lm-eval-runpod:0.4.3
 ```
 
 ---

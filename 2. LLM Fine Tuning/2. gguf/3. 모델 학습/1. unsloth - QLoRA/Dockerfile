@@ -1,55 +1,36 @@
 # ==================================================
-# Base Image (CUDA pin)
+# 1. Base Image
 # ==================================================
-# RunPod 공식 PyTorch 2.8.0 이미지
 FROM runpod/pytorch:2.8.0-py3.11-cuda12.8.1-cudnn-devel-ubuntu22.04
 
-ENV DEBIAN_FRONTEND=noninteractive
-ENV PYTHONUNBUFFERED=1
-ENV CUDA_HOME=/usr/local/cuda
-ENV TORCH_CUDA_ARCH_LIST="8.0 8.6 8.9 9.0"
+ENV DEBIAN_FRONTEND=noninteractive \
+    PYTHONUNBUFFERED=1 \
+    CUDA_HOME=/usr/local/cuda \
+    # 파이썬 실행 경로를 명시적으로 설정
+    PYTHON_EXE=/usr/bin/python3.11 
 
 WORKDIR /workspace
 
 # ==================================================
-# System packages
+# 2. System Packages & Python Link
 # ==================================================
 RUN apt-get update && apt-get install -y \
-    git \
-    curl \
-    wget \
-    vim \
-    build-essential \
-    ninja-build \
-    libaio-dev \
-    python3.11 \
-    python3-pip \
-    python3.11-dev \
+    git curl wget vim build-essential ninja-build libaio-dev \
+    python3.11 python3.11-dev python3-pip \
     && rm -rf /var/lib/apt/lists/*
 
-RUN ln -sf /usr/bin/python3 /usr/bin/python
+# 시스템 기본 파이썬을 3.11로 완전히 고정 (혼선 방지 핵심)
+RUN ln -sf /usr/bin/python3.11 /usr/bin/python3 && \
+    ln -sf /usr/bin/python3.11 /usr/bin/python && \
+    python -m pip install --upgrade pip
 
 # ==================================================
-# Python base
+# 3. AI Libraries (명시적 파이썬 호출)
 # ==================================================
-RUN pip install --upgrade \
-    pip \
-    setuptools \
-    wheel
+# python -m pip을 사용하면 현재 /usr/bin/python이 가리키는 3.11에만 설치됩니다.
+RUN python -m pip install --no-cache-dir --upgrade setuptools wheel
 
-# ==================================================
-# PyTorch (CUDA 12.1 공식 wheel)
-# ==================================================
-# RUN pip install \
-#     torch==2.8.0 \
-#     torchvision==0.23.0 \
-#     torchaudio==2.8.0 \
-#     --index-url https://download.pytorch.org/whl/cu128
-
-# ==================================================
-# HuggingFace core stack
-# ==================================================
-RUN pip install \
+RUN python -m pip install --no-cache-dir \
     transformers==4.57.3 \
     accelerate==1.12.0 \
     datasets==4.3.0 \
@@ -60,10 +41,7 @@ RUN pip install \
     packaging==24.2 \
     safetensors==0.7.0
 
-# ==================================================
-# Unsloth stack
-# ==================================================
-RUN pip install \
+RUN python -m pip install --no-cache-dir \
     unsloth==2025.12.5 \
     unsloth-zoo==2025.12.4 \
     trl==0.24.0 \
@@ -71,84 +49,34 @@ RUN pip install \
     bitsandbytes==0.49.0 \
     xformers==0.0.33
 
-# ==================================================
-# Optional (강의 편의)
-# ==================================================
-RUN pip install \
-    wandb==0.23.1 \
-    tensorboard==2.20.0 \
-    rich==14.2.0
+RUN python -m pip install --no-cache-dir \
+    wandb==0.23.1 tensorboard==2.20.0 rich==14.2.0 \
+    ipykernel==6.29.5 jupyter-client==8.6.3 nbformat==5.10.4
+
+# 커널 등록 시에도 정확한 경로 지정
+RUN /usr/bin/python3.11 -m ipykernel install --name unsloth --display-name "Python (Unsloth)"
 
 # ==================================================
-# Jupyter kernel only (NOT server)
-# ==================================================
-RUN pip install \
-    ipykernel==6.29.5 \
-    jupyter-client==8.6.3 \
-    nbformat==5.10.4
-
-# Python 커널 등록
-RUN python -m ipykernel install \
-    --name unsloth \
-    --display-name "Python (Unsloth)"
-
-# ==================================================
-# VSCode Server (code-server)
+# 4. VSCode Server & Extensions
 # ==================================================
 ENV HOME=/root
 
-RUN curl -fsSL https://code-server.dev/install.sh | sh \
-    && /usr/bin/code-server --version
+RUN curl -fsSL https://code-server.dev/install.sh | sh
+RUN mkdir -p /root/.local/share/code-server
+RUN code-server --install-extension ms-python.python --force && \
+    code-server --install-extension ms-toolsai.jupyter --force
 
 # ==================================================
-# VSCode extensions
+# 5. Environment & Content
 # ==================================================
-# RUN mkdir -p /root/.local/share/code-server && \
-#     /usr/bin/code-server \
-#     --user-data-dir /root/.local/share/code-server \
-#     --install-extension ms-python.python || true && \
-#     /usr/bin/code-server \
-#     --user-data-dir /root/.local/share/code-server \
-#     --install-extension ms-toolsai.jupyter || true && \
-#     /usr/bin/code-server \
-#     --user-data-dir /root/.local/share/code-server \
-#     --install-extension ms-python.vscode-pylance || true
+ENV HF_HOME=/workspace/.cache/huggingface \
+    XDG_DATA_HOME=/workspace/.vscode
 
-# ==================================================
-# Runtime cache (RunPod Volume friendly)
-# ==================================================
-ENV HF_HOME=/workspace/.cache/huggingface
-ENV TRANSFORMERS_CACHE=/workspace/.cache/huggingface
-ENV WANDB_DIR=/workspace/.cache/wandb
-
-ENV XDG_DATA_HOME=/workspace/.vscode
-ENV XDG_CONFIG_HOME=/workspace/.config
-ENV XDG_CACHE_HOME=/workspace/.cache
-
-# ==================================================
-# Permissions
-# ==================================================
-RUN chmod -R 777 /workspace
-
-# ==================================================
-# Expose VSCode Server
-# ==================================================
-EXPOSE 8080
-
-# ==================================================
-# 강의자료 복사
-# ==================================================
 COPY lectures/ /opt/lectures/
 
-# ==================================================
-# Entrypoint
-# ==================================================
+EXPOSE 8080
+
 CMD ["bash", "-c", "\
-if [ ! -d /workspace/lectures ]; then \
-  cp -r /opt/lectures /workspace/lectures; \
-fi && \
-code-server /workspace \
-  --bind-addr 0.0.0.0:8080 \
-  --auth none \
-  --disable-telemetry \
+if [ ! -d /workspace/lectures ]; then cp -r /opt/lectures /workspace/lectures; fi && \
+code-server /workspace --bind-addr 0.0.0.0:8080 --auth none --disable-telemetry \
 "]
