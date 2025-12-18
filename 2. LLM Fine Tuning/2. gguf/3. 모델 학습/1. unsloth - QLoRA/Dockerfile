@@ -39,7 +39,8 @@ RUN python -m pip install --no-cache-dir \
     scipy==1.16.3 \
     einops==0.8.1 \
     packaging==24.2 \
-    safetensors==0.7.0
+    safetensors==0.7.0 \
+    tqdm
 
 RUN python -m pip install --no-cache-dir \
     unsloth==2025.12.5 \
@@ -57,14 +58,9 @@ RUN python -m pip install --no-cache-dir \
 RUN /usr/bin/python3.11 -m ipykernel install --name unsloth --display-name "Python (Unsloth)"
 
 # ==================================================
-# 4. VSCode Server & Extensions
+# 4. VSCode Server
 # ==================================================
-ENV HOME=/root
-
 RUN curl -fsSL https://code-server.dev/install.sh | sh
-RUN mkdir -p /root/.local/share/code-server
-RUN code-server --install-extension ms-python.python --force && \
-    code-server --install-extension ms-toolsai.jupyter --force
 
 # ==================================================
 # 5. Environment & Content
@@ -78,5 +74,8 @@ EXPOSE 8080
 
 CMD ["bash", "-c", "\
 if [ ! -d /workspace/lectures ]; then cp -r /opt/lectures /workspace/lectures; fi && \
-code-server /workspace --bind-addr 0.0.0.0:8080 --auth none --disable-telemetry \
+code-server /workspace \
+    --bind-addr 0.0.0.0:8080 \
+    --auth none \
+    --disable-telemetry \
 "]
