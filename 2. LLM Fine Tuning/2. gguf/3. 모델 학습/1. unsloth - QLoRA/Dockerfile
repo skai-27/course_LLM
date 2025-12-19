@@ -40,7 +40,8 @@ RUN python -m pip install --no-cache-dir \
     einops==0.8.1 \
     packaging==24.2 \
     safetensors==0.7.0 \
-    tqdm==4.67.1
+    tqdm==4.67.1 \
+    python-dotenv==1.1.1
 
 RUN python -m pip install --no-cache-dir \
     unsloth==2025.12.5 \
