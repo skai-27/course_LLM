@@ -76,13 +76,13 @@ RUN pip install \
     tqdm==4.66.4
 
 # ==================================================
-# OpenAI-style Eval stack (LLM-as-a-Judge)
+# Deep Eval stack (LLM-as-a-Judge)
 # ==================================================
 RUN pip install \
     openai==1.30.1 \
-    litellm==1.38.3 \
-    tiktoken==0.7.0 \
-    pydantic==2.7.1
+    deepeval==0.21.73 \
+    pytest==8.2.0 \
+    pytest-asyncio==0.23.6
 
 # ==================================================
 # Hugging Face Hub
@@ -109,14 +109,6 @@ ENV HOME=/root
 
 RUN curl -fsSL https://code-server.dev/install.sh | sh \
     && /usr/bin/code-server --version
-
-# ==================================================
-# VSCode extensions (강의 필수)
-# ==================================================
-RUN /usr/bin/code-server \
-    --install-extension ms-python.python \
-    --install-extension ms-toolsai.jupyter \
-    --install-extension ms-python.vscode-pylance
 
 # ==================================================
 # Runtime cache (Volume friendly)

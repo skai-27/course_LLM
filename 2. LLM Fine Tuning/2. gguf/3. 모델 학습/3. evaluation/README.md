@@ -1,6 +1,6 @@
 # Docker Hub에 배포하는 명령어
 ```shell
-docker build -t 도커허브아이디/lm-eval-runpod:0.4.3 .
+docker build -t goodwon593/lm-eval-runpod:0.4.3 .
 docker push 도커허브아이디/lm-eval-runpod:0.4.3
 
 # GPU용
@@ -41,19 +41,35 @@ docker run -it --rm -p 8888:8888 -v ./workspace:/workspace 도커허브아이디
 | 자동화 용이성   | 매우 쉬움                 | 중간                              | CI/스크립트화 가능       |
 
 ---
-# lm-eval + 한국어 특화 vs lm-eval + OpenAI-style
+# lm-eval + 한국어 특화 vs lm-eval + DeepEval
 
-| 평가 관점                 | lm-eval + 한국어 특화  | lm-eval + OpenAI-style |
-| --------------------- | ----------------- | ---------------------- |
-| 평가 대상                 | **모델 능력 (언어 중심)** | **응답 품질 (행동 중심)**      |
-| 한국어 이해력               | ⭐⭐⭐⭐⭐             | ⭐⭐⭐                    |
-| Fine-tuning 효과        | ⭐⭐⭐⭐              | ⭐⭐⭐⭐⭐                  |
-| Instruction tuning 검증 | ⭐⭐                | ⭐⭐⭐⭐⭐                  |
-| 객관성                   | ⭐⭐⭐⭐⭐             | ⭐⭐⭐                    |
-| 재현성                   | ⭐⭐⭐⭐⭐             | ⭐⭐                     |
-| 외부 비교 가능성             | ⭐⭐⭐⭐              | ⭐                      |
-| Hub 공개 설득력            | ⭐⭐⭐⭐⭐             | ⭐⭐⭐                    |
-| 난이도            | 쉬움                | 중간                     |
-| 비용                    | 낮음                | 높음 (API Judge)         |
+| 평가 관점                    | lm-eval + 한국어 특화     | lm-eval + DeepEval   |
+| ------------------------ | -------------------- | -------------------- |
+| 평가 대상                    | **모델 능력 (언어·지식 중심)** | **응답 품질 (행동·추론 중심)** |
+| 한국어 이해력                  | ⭐⭐⭐⭐⭐                | ⭐⭐⭐⭐                 |
+| Fine-tuning 효과           | ⭐⭐⭐⭐                 | ⭐⭐⭐⭐⭐                |
+| Instruction tuning 검증    | ⭐⭐                   | ⭐⭐⭐⭐⭐                |
+| Chain-of-Thought / 추론 평가 | ⭐⭐                   | ⭐⭐⭐⭐⭐                |
+| RAG / Tool 사용 적합성        | ⭐                    | ⭐⭐⭐⭐⭐                |
+| 평가 지표 해석 용이성             | ⭐⭐⭐⭐⭐                | ⭐⭐⭐                  |
+| 객관성                      | ⭐⭐⭐⭐⭐                | ⭐⭐⭐                  |
+| 재현성                      | ⭐⭐⭐⭐⭐                | ⭐⭐⭐                  |
+| 커스터마이징 난이도               | 낮음                   | 중간~높음                |
+| 외부 비교 가능성                | ⭐⭐⭐⭐                 | ⭐⭐                   |
+| 실무 적합성                   | ⭐⭐⭐                  | ⭐⭐⭐⭐⭐                |
+| Hub 공개 설득력               | ⭐⭐⭐⭐⭐                | ⭐⭐⭐                  |
+| 난이도                      | 쉬움                   | 중간                   |
+| 비용                       | 낮음                   | 중간 (Self-host 가능)    |
 
-lm-eval + 한국어 특화 + OpenAI-style
+---
+# 참고 싸이트 
+### lm-evaluation-harness
+- https://github.com/EleutherAI/lm-evaluation-harness
+- https://devocean.sk.com/blog/techBoardDetail.do?ID=166716&boardType=techBlog
+- https://techblog.lycorp.co.jp/ko/automating-llm-application-evaluation-with-harness
+
+### DeepEval
+- https://deepeval.com/
+- https://github.com/confident-ai/deepeval
+
+
