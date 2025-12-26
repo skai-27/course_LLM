@@ -1,0 +1,10 @@
+deepeval==3.7.6
+openai==2.14.0
+pandas==2.3.3
+sentence-transformers==5.2.0
+evaluate==0.4.6
+tqdm==4.67.1
+python-dotenv==1.2.1
+lm-eval==0.4.9.2
+ipykernel==6.29.5 
+jupyter-client==8.6.3

@@ -1,12 +1,10 @@
 # Docker Hub에 배포하는 명령어
 ```shell
-docker build -t goodwon593/lm-eval-runpod:0.4.3 .
-docker push 도커허브아이디/lm-eval-runpod:0.4.3
+docker build -t goodwon593/deepeval:3.7.6 .
+docker push goodwon593/deepeval:3.7.6
 
-# GPU용
-docker run -it --rm --gpus all -p 8888:8888 -v ./workspace:/workspace 도커허브아이디/lm-eval-runpod:0.4.3
 # CPU용
-docker run -it --rm -p 8888:8888 -v ./workspace:/workspace 도커허브아이디/lm-eval-runpod:0.4.3
+docker run -it --rm -p 8080:8080 -v ./workspace:/workspace goodwon593/deepeval:3.7.6
 ```
 
 ---
