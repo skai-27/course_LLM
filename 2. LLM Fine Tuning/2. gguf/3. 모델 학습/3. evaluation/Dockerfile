@@ -1,7 +1,7 @@
 # ==================================================
 # Base Image (CPU Runtime)
 # ==================================================
-FROM runpod/base:1.0.2-ubuntu2204
+FROM runpod/pytorch:2.8.0-py3.11-cuda12.8.1-cudnn-devel-ubuntu22.04
 
 ENV DEBIAN_FRONTEND=noninteractive \
     PYTHONUNBUFFERED=1 \
@@ -31,19 +31,6 @@ COPY requirements.txt /workspace/requirements.txt
 RUN python -m pip install --no-cache-dir --upgrade pip
 RUN python -m pip install --no-cache-dir \
     -r /workspace/requirements.txt
-
-# RUN python -m pip install --no-cache-dir \
-#     deepeval==3.7.6 \
-#     openai==2.14.0 \
-#     pandas==2.3.3 \
-#     sentence-transformers==5.2.0 \
-#     evaluate==0.4.6 \
-#     tqdm==4.67.1 \
-#     python-dotenv==1.2.1 \
-#     lm-eval==0.4.9.2
-
-# RUN python -m pip install --no-cache-dir \
-#     ipykernel==6.29.5 jupyter-client==8.6.3
 
 # 커널 등록 (--sys-prefix로 Python 환경 내에 설치)
 RUN python -m ipykernel install --sys-prefix --name DeepEval --display-name "Python (DeepEval)"
