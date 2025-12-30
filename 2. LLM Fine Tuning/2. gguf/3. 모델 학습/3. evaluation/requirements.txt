@@ -14,3 +14,5 @@ jupyter==1.1.1
 jupyterlab==4.5.1
 ipywidgets==8.1.8 
 widgetsnbextension==4.0.15
+hf_xet==1.2.0
+
