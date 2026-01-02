@@ -1,10 +1,10 @@
 # Docker Hub에 배포하는 명령어
 ```shell
-docker build -t goodwon593/deepeval-runpod:3.7.6 .
-docker push goodwon593/deepeval-runpod:3.7.6
+docker build -t goodwon593/unsloth-deepeval-runpod:3.7.6 .
+docker push goodwon593/unsloth-deepeval-runpod:3.7.6
 
 # CPU용
-docker run -it --rm -p 8080:8080 -v ./workspace:/workspace goodwon593/deepeval-runpod:3.7.6
+docker run -it --rm -p 8080:8080 -v ./workspace:/workspace goodwon593/unsloth-deepeval-runpod:3.7.6
 ```
 
 ---
