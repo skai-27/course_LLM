@@ -25,6 +25,7 @@ packaging==24.2
 safetensors==0.7.0
 python-dotenv==1.1.1
 tqdm==4.67.1
+scikit-learn==1.8.0
 
 # ==================================================
 # Jupyter & UI
