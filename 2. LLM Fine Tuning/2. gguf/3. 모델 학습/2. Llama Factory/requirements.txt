@@ -1,41 +1,27 @@
-# ==================================================
-# Core LLM Libraries
-# ==================================================
-torch==2.8.0
-transformers==4.57.3
-accelerate==1.12.0
-datasets==4.3.0
-sentencepiece==0.2.1
-protobuf==6.33.2
+torch==2.4.0
+torchvision==0.19.0
+torchaudio==2.4.0
 
-# ==================================================
-# LLaMA Factory & Fine-tuning
-# ==================================================
-llamafactory==0.8.3
-peft==0.18.0
-trl==0.26.2
-bitsandbytes==0.49.0
+llamafactory[metrics,bitsandbytes,qwen]==0.9.1
+transformers==4.46.1
+accelerate==1.0.1
+datasets==3.1.0
+peft==0.12.0
+trl==0.9.6
+gradio==4.44.1
+bitsandbytes==0.44.1
+sentencepiece==0.2.0
+protobuf==5.28.3
 
-# ==================================================
-# Utilities
-# ==================================================
-scipy==1.16.3
-einops==0.8.1
-packaging==24.2
-safetensors==0.7.0
-python-dotenv==1.1.1
-tqdm==4.67.1
-scikit-learn==1.8.0
+pandas==2.2.3
+scikit-learn==1.5.2
+numpy==1.26.4
+scipy==1.13.1
 
-# ==================================================
-# Jupyter & UI
-# ==================================================
-ipykernel==6.29.5 
-jupyter-client==8.6.3
-jupyter==1.1.1 
-jupyterlab==4.5.1
-ipywidgets==8.1.8 
-widgetsnbextension==4.0.15
-nbformat==5.10.4
-gradio>=4.0.0
+ipykernel==6.29.5
+ipywidgets==8.1.5
+tqdm==4.67.0
 
+einops==0.8.0
+safetensors==0.4.5
+pyyaml==6.0.2

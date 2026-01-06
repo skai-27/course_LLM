@@ -1,12 +1,12 @@
 # Docker Hub에 배포하는 명령어
 ```shell
-docker build -t goodwon593/llamafactory-runpod:0.8.3 .
-docker push goodwon593/llamafactory-runpod:0.8.3
+docker build -t goodwon593/llamafactory-runpod:0.9.1 .
+docker push goodwon593/llamafactory-runpod:0.9.1
 
 # GPU용
-docker run -it --rm --gpus all -p 8080:8080 -v ./workspace:/workspace goodwon593/llamafactory-runpod:0.8.3
+docker run -it --rm --gpus all -p 8080:8080 -v ./workspace:/workspace goodwon593/llamafactory-runpod:0.9.1
 # CPU용
-docker run -it --rm -p 8080:8080 -v ./workspace:/workspace goodwon593/llamafactory-runpod:0.8.3
+docker run -it --rm -p 8080:8080 -v ./workspace:/workspace goodwon593/llamafactory-runpod:0.9.1
 ```
 
 
@@ -156,6 +156,141 @@ docker run -it --rm -p 8080:8080 -v ./workspace:/workspace goodwon593/llamafacto
 - **QLoRA**: 4-bit 양자화를 통한 메모리 효율적 학습
 - **데이터셋**: 의료 상담 데이터 (illnesses.csv)
 - **목표**: 의료 도메인 특화 sLLM 개발
+
+---
+
+## 📖 강의 자료
+
+### 🎓 LLaMA Factory QLoRA 파인튜닝 가이드
+
+`lectures/` 폴더에서 **LLaMA Factory**를 이용한 QLoRA 파인튜닝 강의 자료를 확인하세요!
+
+#### 📁 강의 구성
+
+```
+lectures/
+├── Fine Tuning - QLoRA.ipynb    # 📓 메인 강의 노트북 (22개 셀)
+├── README.md                     # 📚 상세 가이드
+└── data/
+    ├── illnesses.csv             # 📊 의료 상담 데이터셋 (794개)
+    ├── medical_train.json        # 🎯 학습 데이터 (생성됨)
+    ├── medical_val.json          # ✅ 검증 데이터 (생성됨)
+    └── dataset_info.json         # ℹ️ LLaMA Factory 데이터셋 정보
+```
+
+#### 📚 강의 내용
+
+1. **LLaMA Factory 소개**
+   - No-Code LLM 파인튜닝 프레임워크
+   - CLI, Web UI, Python API 지원
+   - 100+ 모델 지원
+
+2. **QLoRA 이론**
+   - 4-bit 양자화 + LoRA 결합
+   - 메모리 효율성 비교
+   - 주요 하이퍼파라미터
+
+3. **환경 설정**
+   - 패키지 확인
+   - LLaMA Factory CLI 확인
+
+4. **데이터셋 준비**
+   - CSV → Alpaca 형식 변환
+   - dataset_info.json 등록
+
+5. **LLaMA Factory CLI로 학습**
+   - 학습 명령어 상세 설명
+   - 파라미터 가이드
+
+6. **Web UI 사용법**
+   - Web UI 실행 방법
+   - Train 탭 설정
+   - Chat 탭 테스트
+
+7. **추론 및 평가**
+   - CLI로 추론 실행
+   - 실시간 대화 테스트
+
+8. **모델 내보내기**
+   - LoRA 어댑터 병합
+   - 모델 배포
+
+9. **실전 팁**
+   - 하이퍼파라미터 튜닝
+   - 메모리 최적화
+   - 문제 해결
+
+10. **요약**
+   - 학습 내용 정리
+   - 빠른 시작 체크리스트
+   - 다음 단계
+
+#### 🚀 빠른 시작
+
+```bash
+# 1. 패키지 설치
+pip install -r requirements.txt
+
+# 2. 강의 노트북 실행
+cd lectures
+jupyter lab
+# Fine Tuning - QLoRA.ipynb 열기
+
+# 3. 데이터 준비 (노트북에서 실행)
+# - CSV → Alpaca 형식 변환
+# - dataset_info.json 생성
+
+# 4. 학습 실행 (둘 중 하나)
+# CLI 방식:
+llamafactory-cli train --model_name_or_path Qwen/Qwen2.5-1.5B-Instruct ...
+
+# Web UI 방식:
+llamafactory-cli webui
+# http://localhost:7860 접속
+```
+
+#### 💡 주요 특징
+
+- ✅ **실전 중심**: 실제 의료 데이터로 실습
+- ✅ **단계별 설명**: 초보자도 따라할 수 있는 상세한 설명
+- ✅ **다양한 방법**: Notebook, 스크립트, CLI 모두 제공
+- ✅ **한국어 지원**: 모든 설명과 주석이 한국어
+- ✅ **문제 해결**: 자주 발생하는 문제와 해결 방법 포함
+
+#### 📊 데이터셋 정보
+
+**소아청소년과 의료 상담 데이터셋**
+- 총 794개의 질문-답변 쌍
+- 부모들의 실제 질문과 전문의 답변
+- 다양한 질문 스타일과 길이
+- 학습/검증 데이터 8:2 분할
+
+#### 🎯 학습 결과
+
+- **프레임워크**: LLaMA Factory 0.8.3
+- **베이스 모델**: Qwen2.5-1.5B-Instruct
+- **학습 방법**: QLoRA (4-bit)
+- **GPU 메모리**: ~6-8GB
+- **학습 시간**: ~30-60분 (A100 기준)
+- **어댑터 크기**: ~30-50MB
+
+#### 📋 LLaMA Factory 주요 명령어
+
+```bash
+llamafactory-cli train    # 학습
+llamafactory-cli chat     # 추론
+llamafactory-cli webui    # Web UI
+llamafactory-cli export   # 모델 내보내기
+llamafactory-cli eval     # 평가
+```
+
+#### 📖 참고 자료
+
+강의에서 참조한 자료:
+- [LLaMA Factory 공식 문서](https://llamafactory.readthedocs.io/)
+- [SK Devocean - No-Code LLM 파인튜닝](https://devocean.sk.com/blog/techBoardDetail.do?ID=166098)
+- [QLoRA 논문](https://arxiv.org/abs/2305.14314)
+- [LoRA 논문](https://arxiv.org/abs/2106.09685)
 
 ---
 

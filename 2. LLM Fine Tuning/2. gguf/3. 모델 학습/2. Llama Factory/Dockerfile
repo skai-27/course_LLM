@@ -1,60 +1,46 @@
-# ==================================================
-# 1. Base Image
-# ==================================================
-FROM runpod/pytorch:2.8.0-py3.11-cuda12.8.1-cudnn-devel-ubuntu22.04
+FROM nvidia/cuda:12.1.1-devel-ubuntu22.04
 
 ENV DEBIAN_FRONTEND=noninteractive \
-    PYTHONUNBUFFERED=1 \
-    CUDA_HOME=/usr/local/cuda \
-    # 파이썬 실행 경로를 명시적으로 설정
-    PYTHON_EXE=/usr/bin/python3.11 
+    PYTHONUNBUFFERED=1
 
 WORKDIR /workspace
 
-# ==================================================
-# 2. System Packages & Python Link
-# ==================================================
+# 1. 시스템 패키지 및 Python 3.11 설치
 RUN apt-get update && apt-get install -y \
-    git curl wget vim build-essential \
-    python3.11 python3.11-dev python3-pip \
-    && rm -rf /var/lib/apt/lists/*
+    software-properties-common git curl wget vim build-essential && \
+    add-apt-repository ppa:deadsnakes/ppa && apt-get update && \
+    apt-get install -y python3.11 python3.11-dev python3.11-distutils && \
+    rm -rf /var/lib/apt/lists/*
 
-# 시스템 기본 파이썬 3.11로 고정
-RUN ln -sf /usr/bin/python3.11 /usr/bin/python3 && \
-    ln -sf /usr/bin/python3.11 /usr/bin/python && \
-    python -m pip install --upgrade pip setuptools wheel
+# 2. Pip 설치 (가장 안정적인 bootstrap 방식)
+RUN curl -sS https://bootstrap.pypa.io/get-pip.py | python3.11
 
-# ==================================================
-# 3. AI Libraries (명시적 파이썬 호출)
-# ==================================================
-COPY requirements.txt /workspace/requirements.txt
+# 3. 라이브러리 설치
+COPY requirements.txt /tmp/requirements.txt
 
-RUN python -m pip install --no-cache-dir --upgrade pip
-RUN python -m pip install --no-cache-dir \
-    -r /workspace/requirements.txt
+# Pip 자체를 최신으로 유지하여 의존성 해결 능력 향상
+RUN python3.11 -m pip install --no-cache-dir --upgrade pip setuptools wheel
 
-# 커널 등록 시에도 정확한 경로 지정
-RUN /usr/bin/python3.11 -m ipykernel install --name unsloth --display-name "Python (Unsloth)"
+# 핵심 torch 설치 (인덱스 명시)
+RUN python3.11 -m pip install --no-cache-dir torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
 
-# ==================================================
-# 4. VSCode Server
-# ==================================================
+# 나머지 패키지 설치 (여기서 수정된 requirements.txt 사용)
+RUN python3.11 -m pip install --no-cache-dir -r /tmp/requirements.txt
+
+# 4. 소스 코드 및 강의 자료 준비
+RUN git clone --depth 1 https://github.com/hiyouga/LLaMA-Factory.git /opt/LLaMA-Factory
+COPY lectures/ /opt/lectures/
 RUN curl -fsSL https://code-server.dev/install.sh | sh
 
-# ==================================================
-# 5. Environment & Content
-# ==================================================
-ENV HF_HOME=/workspace/.cache/huggingface \
-    XDG_DATA_HOME=/workspace/.vscode
+EXPOSE 8080 7860
 
-COPY lectures/ /opt/lectures/
-
-EXPOSE 8080
-
+# 5. 실행 스크립트 (RunPod 마운트 대응)
 CMD ["bash", "-c", "\
-if [ ! -d /workspace/lectures ]; then cp -r /opt/lectures /workspace/lectures; fi && \
-code-server /workspace \
-    --bind-addr 0.0.0.0:8080 \
-    --auth none \
-    --disable-telemetry \
+    if [ ! -d /workspace/LLaMA-Factory ]; then \
+        cp -r /opt/LLaMA-Factory /workspace/LLaMA-Factory && \
+        cp -r /opt/lectures /workspace/lectures && \
+        cd /workspace/LLaMA-Factory && python3.11 -m pip install -e .[metrics,bitsandbytes,qwen] && \
+        python3.11 -m ipykernel install --user --name LLaMA --display-name 'Python 3.11 (LLaMA Factory)'; \
+    fi && \
+    code-server /workspace --bind-addr 0.0.0.0:8080 --auth none --disable-telemetry \
 "]
