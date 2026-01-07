@@ -28,19 +28,17 @@ RUN python3.11 -m pip install --no-cache-dir torch torchvision torchaudio --inde
 RUN python3.11 -m pip install --no-cache-dir -r /tmp/requirements.txt
 
 # 4. 소스 코드 및 강의 자료 준비
-RUN git clone --depth 1 https://github.com/hiyouga/LLaMA-Factory.git /opt/LLaMA-Factory
 COPY lectures/ /opt/lectures/
 RUN curl -fsSL https://code-server.dev/install.sh | sh
 
-EXPOSE 8080 7860
+EXPOSE 8080
 
 # 5. 실행 스크립트 (RunPod 마운트 대응)
 CMD ["bash", "-c", "\
-    if [ ! -d /workspace/LLaMA-Factory ]; then \
-        cp -r /opt/LLaMA-Factory /workspace/LLaMA-Factory && \
+    if [ ! -d /workspace/lectures ]; then \
         cp -r /opt/lectures /workspace/lectures && \
-        cd /workspace/LLaMA-Factory && python3.11 -m pip install -e .[metrics,bitsandbytes,qwen] && \
         python3.11 -m ipykernel install --user --name LLaMA --display-name 'Python 3.11 (LLaMA Factory)'; \
     fi && \
     code-server /workspace --bind-addr 0.0.0.0:8080 --auth none --disable-telemetry \
 "]
+
