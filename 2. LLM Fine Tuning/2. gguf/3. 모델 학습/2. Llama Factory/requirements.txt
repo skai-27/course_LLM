@@ -12,6 +12,7 @@ gradio==4.44.1
 bitsandbytes==0.44.1
 sentencepiece==0.2.0
 protobuf==5.28.3
+deepspeed   # DeepSpeed 설치 (Multi-GPU 메모리 분산 학습 필수)
 
 pandas==2.2.3
 scikit-learn==1.5.2
