@@ -14,6 +14,7 @@ RUN apt-get update && apt-get install -y \
     software-properties-common git curl wget vim build-essential && \
     add-apt-repository ppa:deadsnakes/ppa && apt-get update && \
     apt-get install -y python3.11 python3.11-dev python3.11-distutils && \
+    apt-get install -y libaio-dev && \
     rm -rf /var/lib/apt/lists/*
 
 # 2. Pip 설치

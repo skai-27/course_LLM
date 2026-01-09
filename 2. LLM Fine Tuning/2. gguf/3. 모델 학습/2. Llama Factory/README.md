@@ -294,6 +294,139 @@ llamafactory-cli eval     # 평가
 
 ---
 
+## 📝 실습 2: Multi GPU Full Fine-tuning
+
+### 개요
+
+**EXAONE-3.5-2.4B-Instruct** 모델을 **DeepSpeed**를 사용하여 Multi GPU 환경에서 Full Fine-tuning하는 실습입니다.
+
+📓 **노트북**: `lectures/2. Multi GPU - Full FT.ipynb`
+
+### 핵심 내용
+
+```
+1. Multi GPU 분산 학습 개념
+   ├─ DeepSpeed ZeRO 단계 이해
+   ├─ Optimizer/Gradient 분산
+   └─ 메모리 효율 최적화
+
+2. EXAONE 모델 파인튜닝
+   ├─ 한국어 특화 sLLM
+   ├─ Full Fine-tuning 수행
+   └─ 의료 도메인 적용
+
+3. LLaMA Factory CLI
+   ├─ 쉘 스크립트 자동화
+   ├─ DeepSpeed 통합
+   └─ WandB 모니터링
+
+4. RunPod 환경 활용
+   ├─ 클라우드 GPU 설정
+   ├─ 비용 효율적 학습
+   └─ 실전 배포 준비
+```
+
+### 💡 주요 특징
+
+- ✅ **Multi GPU**: DeepSpeed ZeRO-2로 효율적 분산 학습
+- ✅ **Full Fine-tuning**: 모든 파라미터 학습으로 최고 성능
+- ✅ **자동화**: 쉘 스크립트로 간편한 실행
+- ✅ **확장성**: 2/4/8 GPU로 유연하게 확장
+- ✅ **모니터링**: WandB로 실시간 학습 추적
+
+### 📊 성능 비교
+
+| 구성 | GPU 메모리 | 학습 시간 | 배치 크기 |
+|------|-----------|----------|----------|
+| Single GPU | 24GB | 기준 (100%) | 제한적 |
+| 2x GPU (DeepSpeed) | 24GB × 2 | ~60% | 2배 |
+| 4x GPU (DeepSpeed) | 24GB × 4 | ~35% | 4배 |
+
+### 🎯 학습 결과
+
+- **프레임워크**: LLaMA Factory 0.9.1 + DeepSpeed 0.18.4
+- **베이스 모델**: EXAONE-3.5-2.4B-Instruct
+- **학습 방법**: Full Fine-tuning (ZeRO-2)
+- **GPU 메모리**: 2x 24GB (최소)
+- **학습 시간**: ~2-3시간 (2x A100 기준)
+- **모델 크기**: ~5GB
+
+### 🚀 실행 방법
+
+#### 1. 환경 설정
+
+```bash
+# 패키지 설치
+pip install -r requirements.txt
+
+# 환경 확인
+python -c "import deepspeed; print(deepspeed.__version__)"
+```
+
+#### 2. 데이터 준비
+
+```bash
+# 노트북의 데이터 준비 섹션 실행
+# - data/medical_train.json
+# - data/medical_val.json
+# - data/dataset_info.json
+```
+
+#### 3. 학습 실행
+
+```bash
+# 스크립트 실행 권한 부여
+chmod +x scripts/train_multi_gpu.sh
+
+# 학습 시작
+bash scripts/train_multi_gpu.sh
+```
+
+#### 4. 추론 테스트
+
+```bash
+# 대화형 추론
+bash scripts/inference.sh
+
+# 또는 Python API 사용
+# 노트북의 추론 섹션 참고
+```
+
+### 📋 생성되는 파일
+
+```
+configs/
+  └─ ds_config_zero2.json        # DeepSpeed 설정
+
+scripts/
+  ├─ train_multi_gpu.sh          # 학습 스크립트
+  ├─ inference.sh                # 추론 스크립트
+  └─ export_model.sh             # 모델 내보내기
+
+outputs/
+  └─ exaone_medical_multigpu/    # 학습된 모델
+```
+
+### 🔧 하이퍼파라미터
+
+| 파라미터 | 값 | 설명 |
+|---------|-------|------|
+| `num_train_epochs` | 5.0 | 전체 데이터 5회 반복 |
+| `per_device_train_batch_size` | 2 | GPU당 배치 크기 |
+| `gradient_accumulation_steps` | 8 | 실질 배치 = 2×8×GPU수 |
+| `learning_rate` | 5e-5 | Full FT 최적 학습률 |
+| `deepspeed` | ZeRO-2 | Optimizer+Gradient 분산 |
+
+### 📖 참고 자료
+
+강의에서 참조한 자료:
+- [LLaMA Factory Distributed Training](https://llamafactory.readthedocs.io/en/latest/advanced/distributed.html)
+- [EXAONE-3.5 Model Card](https://huggingface.co/LGAI-EXAONE/EXAONE-3.5-2.4B-Instruct)
+- [DeepSpeed Documentation](https://www.deepspeed.ai/docs/config-json/)
+- [DeepSpeed ZeRO Paper](https://arxiv.org/abs/1910.02054)
+
+---
+
 ## 📚 참고 자료
 
 - [LLaMA Factory GitHub](https://github.com/hiyouga/LLaMA-Factory)
@@ -301,4 +434,5 @@ llamafactory-cli eval     # 평가
 - [Unsloth GitHub](https://github.com/unslothai/unsloth)
 - [PEFT 문서](https://huggingface.co/docs/peft/)
 - [TRL 문서](https://huggingface.co/docs/trl/)
+- [DeepSpeed 문서](https://www.deepspeed.ai/)
 
