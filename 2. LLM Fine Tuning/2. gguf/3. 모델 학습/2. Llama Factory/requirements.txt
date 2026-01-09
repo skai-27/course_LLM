@@ -1,31 +1,40 @@
-torch==2.4.0
-torchvision==0.19.0
-torchaudio==2.4.0
-tensorboard==2.20.0
+# 기초 프레임워크 (안정적인 2.3.1 조합)
+torch==2.3.1
+torchvision==0.18.1
+torchaudio==2.3.1
+# tensorboard와 protobuf의 충돌 해결
+tensorboard==2.17.0
+protobuf==4.25.3
 
+# LLaMA Factory 및 핵심 라이브러리 (최소 버전 요구사항 반영)
 llamafactory[metrics,bitsandbytes,qwen]==0.9.1
-transformers==4.46.1 # 4.48.0
-accelerate==1.0.1
-datasets==3.1.0
-peft==0.12.0
-trl==0.9.6
+transformers==4.41.2
+accelerate==0.34.0
+datasets==2.19.2
+peft==0.11.1
+trl==0.8.6
+
+# 인터페이스 및 유틸리티
 gradio==4.44.1
-bitsandbytes==0.44.1
+bitsandbytes==0.43.1
 sentencepiece==0.2.0
-protobuf==5.28.3
-deepspeed==0.18.4   # DeepSpeed 설치 (Multi-GPU 메모리 분산 학습 필수)
 
-pandas==2.2.3
-scikit-learn==1.5.2
+# DeepSpeed (에러 회피를 위한 Golden Version)
+deepspeed==0.14.0
+
+# 기타 데이터 분석 및 로깅
+pandas==2.2.2
+scikit-learn==1.5.0
 numpy==1.26.4
-scipy==1.13.1
-python-dotenv==1.1.1
-wandb==0.23.1
+scipy==1.12.0
+python-dotenv==1.0.1
+wandb==0.17.1
 
-ipykernel==6.29.5
-ipywidgets==8.1.5
-tqdm==4.67.0
-
+# 환경 유지
+ipykernel==6.29.4
+ipywidgets==8.1.3
+tqdm==4.66.4
 einops==0.8.0
-safetensors==0.4.5
-pyyaml==6.0.2
+safetensors==0.4.3
+pyyaml==6.0.1
+
