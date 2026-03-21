@@ -12,3 +12,5 @@ langgraph-swarm==0.1.0
 langchain-openai==1.1.0
 langchain-ollama==1.0.0
 
+# Tools 패키지
+langchain-tavily==0.2.13
