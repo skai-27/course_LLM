@@ -12,13 +12,6 @@ paginate: true
 # Resources — 읽기 전용 데이터 엔드포인트
 
 ---
-## 학습 목표
-
-- MCP **Resource**가 “쓰기 없이 노출되는 데이터”라는 점을 설명할 수 있다.
-- **URI**로 식별되고, 클라이언트가 `resources/read` 계열로 읽는 흐름을 이해한다.
-- FastMCP에서 `@mcp.resource`로 문자열·JSON·바이너리를 반환하는 패턴을 익힌다.
-
----
 ## 개념
 
 **Resource**는 서버가 “여기 URI를 열면 이 내용이 나온다”고 **선언하는 읽기 전용 자원**입니다.

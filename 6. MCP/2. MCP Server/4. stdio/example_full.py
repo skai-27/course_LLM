@@ -24,7 +24,7 @@ def server_info() -> dict:
     }
 
 
-@mcp.tool
+@mcp.tool()
 def echo_message(message: str, times: int = 1) -> str:
     """(데모) 메시지를 여러 번 이어 붙인다. 부작용 없는 순수 함수 예시."""
     n = max(1, min(times, 5))

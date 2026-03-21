@@ -1,12 +1,3 @@
-"""
-강의 예제: Resources만 등록한 최소 MCP 서버.
-
-실행: 프로젝트 루트에서
-  python 1_resources/example_resources.py
-또는
-  fastmcp run 1_resources/example_resources.py:mcp
-"""
-
 from __future__ import annotations
 
 from fastmcp import FastMCP

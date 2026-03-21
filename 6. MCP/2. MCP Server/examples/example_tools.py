@@ -12,13 +12,13 @@ from fastmcp import FastMCP
 mcp = FastMCP("Course — Tools only")
 
 
-@mcp.tool
+@mcp.tool()
 def add_integers(a: int, b: int) -> int:
     """두 정수를 더한다. 타입 힌트가 도구 입력 스키마로 노출된다."""
     return a + b
 
 
-@mcp.tool
+@mcp.tool()
 def summarize_text(text: str, max_sentences: int = 2) -> str:
     """
     (데모) 긴 텍스트를 짧게 자른다. 실제 요약은 LLM이 하도록 Resource/Tool을 나눌 수도 있다.
