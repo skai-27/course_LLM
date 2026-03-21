@@ -1,51 +1,60 @@
-# MCP Server 개발 입문 (SDK 활용)
-
-이 모듈은 **FastMCP**로 MCP 서버를 만들 때 반드게 거치는 네 가지 축—**Resources**, **Tools**, **Prompts**, **stdio 배포·테스트**—을 강의 순서에 맞춰 정리합니다.
+---
+style: |
+  img {
+    display: block;
+    float: none;
+    margin-left: auto;
+    margin-right: auto;
+  }
+marp: true
+paginate: true
+---
+# MCP Server 개발
 
 ## 사용 라이브러리
-
 - [FastMCP](https://gofastmcp.com/) (Python MCP 서버 SDK)
 
 ## 환경 준비
-
 ```bash
 pip install -r requirements.txt
 ```
 
-## 핵심 컴포넌트와 자료 위치
+---
+## MCP(Model Context Protocol)란?
 
-| 컴포넌트 | 역할(한 줄) | 설명 문서 | 예제 코드 |
-|----------|-------------|-----------|-----------|
-| **Resources** | URI로 **읽기 전용** 데이터 노출 | [docs/01-resources.md](docs/01-resources.md) | [examples/example_resources.py](examples/example_resources.py) |
-| **Tools** | LLM이 호출하는 **실행 가능한 함수** | [docs/02-tools.md](docs/02-tools.md) | [examples/example_tools.py](examples/example_tools.py) |
-| **Prompts** | **재사용·파라미터화**된 메시지 템플릿 | [docs/03-prompts.md](docs/03-prompts.md) | [examples/example_prompts.py](examples/example_prompts.py) |
-| **stdio** | 로컬 클라이언트와 **표준 입출력**으로 연결 | [docs/04-stdio-test.md](docs/04-stdio-test.md) | 아래 실행 방법 참고 |
+MCP는 **LLM 애플리케이션이 외부 도구·데이터·프롬프트 템플릿에 접근하는 방식을 표준화**한 프로토콜입니다. “한 클라이언트가 여러 서버에 붙어서, 같은 방식으로 기능을 쓴다”는 그림을 목표로 합니다.
 
-**통합 예제**(세 컴포넌트를 한 서버에 묶음): [examples/example_full.py](examples/example_full.py)
-
-## 권장 학습 순서
-
-1. [docs/00-overview.md](docs/00-overview.md) — MCP가 무엇인지, 서버·클라이언트 관계
-2. Resources → Tools → Prompts 순으로 문서 + 해당 `examples/*.py` 실행
-3. [docs/04-stdio-test.md](docs/04-stdio-test.md)로 Cursor 등 클라이언트에 붙여 보기
-
-## 서버 실행 (stdio)
-
-프로젝트 루트(이 폴더)에서:
-
-```bash
-python examples/example_full.py
+```text
+┌───────────────────┐     MCP (JSON-RPC 등)     ┌────────────────────┐
+│  MCP 클라이언트   │ ◄───────────────────────► │   MCP 서버         │
+│ (IDE, 챗봇 앱 등) │                           │ (이 강의: FastMCP) │
+└───────────────────┘                           └────────────────────┘
+        │                                                │
+        │  tools/call, resources/read,                   │
+        │  prompts/get …                                 │
+        ▼                                                ▼
+   사용자 대화·에이전트 로직                    파일, DB, API, 로컬 함수
 ```
 
-또는 FastMCP CLI:
+---
+## 서버 쪽에서 기억할 세 가지 + 전송 계층
 
-```bash
-fastmcp run examples/example_full.py:mcp
-```
+이 입문 과정에서는 서버가 제공하는 대표 기능을 세 가지로 나눕니다.
 
-자세한 테스트 방법은 [docs/04-stdio-test.md](docs/04-stdio-test.md)를 참고하세요.
+| 구분 | 클라이언트 관점 | 서버 구현 시 질문 |
+|------|-----------------|-------------------|
+| **Resources** | “URI로 **읽을 수 있는** 내용이 있나?” | 어떤 데이터를 **읽기 전용**으로 줄 것인가? |
+| **Tools** | “모델이 **실행을 요청**할 수 있는 동작이 있나?” | 어떤 함수를 **부작용 가능**한 도구로 노출할 것인가? |
+| **Prompts** | “미리 정의된 **프롬프트 조각**이 있나?” | 어떤 시나리오를 **템플릿+인자**로 재사용할 것인가? |
 
-## 참고 링크
+> 이 위에 **전송(transport)** 이 있습니다. 로컬 개발에서는 보통 **stdio**(표준 입출력)로 자식 프로세스로 서버를 띄우고, 파이프로 JSON-RPC 메시지를 주고받습니다.
 
-- [FastMCP 문서](https://gofastmcp.com/)
-- [MCP 사양](https://modelcontextprotocol.io/)
+---
+## FastMCP의 역할
+
+FastMCP는 Python에서 `FastMCP` 인스턴스를 만들고, 데코레이터로 함수를 등록하면 **MCP 스키마·라우팅**을 대신 맞춰 주는 SDK입니다.
+
+- `@mcp.resource("uri://...")` → Resources
+- `@mcp.tool` → Tools
+- `@mcp.prompt` → Prompts
+- `mcp.run()` → 기본적으로 stdio 등으로 서버 기동
