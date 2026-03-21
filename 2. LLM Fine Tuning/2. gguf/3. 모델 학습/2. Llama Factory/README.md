@@ -2,6 +2,7 @@
 ```shell
 # docker build -t goodwon593/llamafactory-runpod:0.9.1 .
 docker build --platform linux/amd64 -t goodwon593/llamafactory-runpod:0.9.1 .
+
 docker push goodwon593/llamafactory-runpod:0.9.1
 
 # GPU용
