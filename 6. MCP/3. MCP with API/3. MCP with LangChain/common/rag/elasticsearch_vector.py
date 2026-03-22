@@ -2,6 +2,9 @@ from langchain_core.vectorstores.base import VectorStore
 from langchain_core.documents import Document
 from typing import List, Tuple
 
+from common.rag.constants import RAGConstants
+from common.rag.elasticsearch_client import get_elasticsearch_client
+from common.rag.embedding import get_embedding_model
 
 class Singleton(type(VectorStore)):
 	_instances = {}
@@ -15,10 +18,10 @@ class Singleton(type(VectorStore)):
 class ElasticsearchVectorStore(VectorStore, metaclass=Singleton):
     """Elasticsearch 기반 VectorStore"""
 
-    def __init__(self, es_client, index_name, embeddings, k=2):
-        self.es_client = es_client
-        self.index_name = index_name
-        self._embeddings = embeddings
+    def __init__(self, es_client=None, index_name=None, embeddings=None, k=2):
+        self.es_client = es_client or get_elasticsearch_client()
+        self.index_name = index_name or RAGConstants.RAG_INDEX_NAME.value
+        self._embeddings = embeddings or get_embedding_model()
         self.k = k
 
     @classmethod

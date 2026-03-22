@@ -1,36 +1,21 @@
-"""
-강의용 MCP 서버 (단일 파일에 도구 모음).
-
-- RAG: Elasticsearch 용어집 검색
-- 워크스페이스: mcp_workspace 폴더 안의 파일 목록/읽기/쓰기
-
-에이전트(`agent_with_mcp.py`)는 langchain-mcp-adapters로
-이 스크립트를 stdio 서브프로세스로 실행해 도구를 호출한다.
-"""
-
-from __future__ import annotations
-
 import asyncio
 import os
 import sys
+import logging
 from pathlib import Path
 from typing import Literal
 
 from dotenv import load_dotenv
-from elasticsearch import Elasticsearch
 from fastmcp import FastMCP
-from langchain_openai import OpenAIEmbeddings
 
 _ROOT = Path(__file__).resolve().parent
 if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
-from common.elasticsearch_vector import ElasticsearchVectorStore
+from common.rag.elasticsearch_vector import ElasticsearchVectorStore
+from common.mcp.constants import MCPConstants
 
 load_dotenv(_ROOT / ".env")
-
-MAX_WS_READ = 256_000
-MAX_WS_WRITE = 256_000
 
 mcp = FastMCP(
     "Course — RAG & Workspace",
@@ -40,9 +25,6 @@ mcp = FastMCP(
         "mcp_workspace 폴더 안에서만 다룬다."
     ),
 )
-
-_store: ElasticsearchVectorStore | None = None
-
 
 def _workspace_root() -> Path:
     raw = os.environ.get("MCP_WORKSPACE_ROOT")
@@ -62,41 +44,16 @@ def _safe_workspace_path(relative_path: str) -> Path:
     return target
 
 
-def _get_vector_store() -> ElasticsearchVectorStore:
-    global _store
-    if _store is not None:
-        return _store
-
-    es_url = os.environ.get("ELASTICSEARCH_URL", "http://localhost:9200")
-    es_user = os.environ.get("ELASTIC_USER", "elastic")
-    es_password = os.environ.get("ELASTIC_PASSWORD", "changeme123!")
-    index_name = os.environ.get("RAG_INDEX_NAME", "course_rag_mcp")
-    embed_model = os.environ.get("OPENAI_EMBEDDING_MODEL", "text-embedding-3-small")
-
-    es = Elasticsearch(
-        es_url,
-        basic_auth=(es_user, es_password),
-        verify_certs=False,
-        request_timeout=60,
-    )
-    embeddings = OpenAIEmbeddings(model=embed_model)
-    _store = ElasticsearchVectorStore(
-        es_client=es,
-        index_name=index_name,
-        embeddings=embeddings,
-        k=4,
-    )
-    return _store
-
-
 @mcp.tool()
 async def rag_vector_search(query: str, k: int = 4) -> str:
     """지식 용어집(RAG 인덱스)에서 의미 유사도 검색. 'OOO가 뭐야', '정의 알려줘' 등에 사용."""
+    logging.info(f"rag_vector_search: {query}, {k}")
+
     q = query.strip()
     if not q:
         raise RuntimeError("query가 비어 있습니다.")
     k = max(1, min(int(k), 20))
-    store = _get_vector_store()
+    store = ElasticsearchVectorStore()
     store.k = k
     docs = store.similarity_search(q, k=k)
     if not docs:
@@ -112,6 +69,8 @@ async def rag_vector_search(query: str, k: int = 4) -> str:
 @mcp.tool()
 async def workspace_list_files(relative_dir: str = "") -> str:
     """mcp_workspace 내 하위 디렉터리 목록과 파일 이름을 나열한다. relative_dir는 workspace 기준 상대 경로."""
+    logging.info(f"workspace_list_files: {relative_dir}")
+
     base = _safe_workspace_path(relative_dir or ".")
     if not base.exists():
         return "(경로 없음)"
@@ -126,12 +85,14 @@ async def workspace_list_files(relative_dir: str = "") -> str:
 @mcp.tool()
 async def workspace_read_text(relative_path: str) -> str:
     """mcp_workspace 아래 텍스트 파일을 읽는다."""
+    logging.info(f"workspace_read_text: {relative_path}")
+
     path = _safe_workspace_path(relative_path)
     if not path.is_file():
         raise RuntimeError("파일이 없거나 파일이 아닙니다.")
     data = path.read_bytes()
-    if len(data) > MAX_WS_READ:
-        raise RuntimeError(f"파일이 너무 큽니다(최대 {MAX_WS_READ}바이트).")
+    if len(data) > MCPConstants.MAX_WS_READ.value:
+        raise RuntimeError(f"파일이 너무 큽니다(최대 {MCPConstants.MAX_WS_READ.value}바이트).")
     return data.decode("utf-8", errors="replace")
 
 
@@ -142,10 +103,12 @@ async def workspace_write_text(
     mode: Literal["create", "overwrite"] = "create",
 ) -> str:
     """mcp_workspace 아래에 텍스트를 쓴다. create는 기존 파일이 있으면 실패."""
+    logging.info(f"workspace_write_text: {relative_path}, {content}, {mode}")
+    
     path = _safe_workspace_path(relative_path)
     raw = content.encode("utf-8")
-    if len(raw) > MAX_WS_WRITE:
-        raise RuntimeError(f"내용이 너무 큽니다(최대 {MAX_WS_WRITE}바이트).")
+    if len(raw) > MCPConstants.MAX_WS_WRITE.value:
+        raise RuntimeError(f"내용이 너무 큽니다(최대 {MCPConstants.MAX_WS_WRITE.value}바이트).")
     path.parent.mkdir(parents=True, exist_ok=True)
     if path.exists() and mode == "create":
         raise RuntimeError("파일이 이미 있어 create 모드로 쓸 수 없습니다.")
@@ -153,17 +116,41 @@ async def workspace_write_text(
     return f"저장 완료: {path.relative_to(_workspace_root())} ({len(raw)} bytes)"
 
 
+def _http_bind() -> tuple[str, int]:
+    host = os.environ.get("MCP_HTTP_HOST", "127.0.0.1")
+    port = int(os.environ.get("MCP_HTTP_PORT", "8766"))
+    return host, port
+
+
 def main() -> None:
-    if "--sse" in sys.argv:
-        asyncio.run(
-            mcp.run_http_async(
-                transport="sse",
-                host=os.environ.get("MCP_HTTP_HOST", "127.0.0.1"),
-                port=int(os.environ.get("MCP_HTTP_PORT", "8766")),
-            )
-        )
+    argv = set(sys.argv[1:])
+    if "--sse" in argv:
+        transport = "sse"
+    elif "--streamable-http" in argv:
+        transport = "streamable-http"
+    elif "--http" in argv:
+        transport = "http"
     else:
         mcp.run()
+        return
+
+    host, port = _http_bind()
+    path: str | None = None
+    if transport == "sse":
+        raw = os.environ.get("MCP_SSE_PATH", "").strip()
+        path = raw or None
+    else:
+        raw = os.environ.get("MCP_STREAMABLE_HTTP_PATH", "").strip()
+        path = raw or None
+
+    asyncio.run(
+        mcp.run_http_async(
+            transport=transport,
+            host=host,
+            port=port,
+            path=path,
+        )
+    )
 
 
 if __name__ == "__main__":
