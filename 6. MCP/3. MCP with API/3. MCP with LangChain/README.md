@@ -1,256 +1,232 @@
-# LangGraph 기반 RAG + MCP 호출 실습
+# MCP with LangChain — RAG·워크스페이스·에이전트 예제
 
-이 폴더는 `Elasticsearch VectorDB`와 `LangGraph`, `MCP`를 함께 사용해
-실무형 RAG 에이전트를 만드는 강의/실습 자료입니다.
+강의용 예제입니다. **Elasticsearch 기반 RAG**, **MCP(Model Context Protocol) 도구**, **LangChain 에이전트**가 어떻게 연결되는지 한 흐름으로 실습할 수 있습니다.
 
-## 학습 목표
+---
 
-- `data` 폴더의 텍스트를 임베딩해 Elasticsearch에 인덱싱한다.
-- `common/elasticsearch_vector.py`를 활용해 벡터/하이브리드 검색을 수행한다.
-- LangGraph로 질문 라우팅(로컬 RAG vs MCP 도구 호출) 그래프를 구성한다.
-- MCP 도구(SQL 조회, 외부 API 조회)를 LLM 도구 호출로 연결한다.
+## 1. 이 프로젝트에서 배우는 것
 
-## 현재 폴더 구조
+| 구분 | 설명 |
+|------|------|
+| **RAG** | `data/` 텍스트를 임베딩해 Elasticsearch에 넣고, 질문과 비슷한 구절을 **벡터 검색**으로 찾습니다. |
+| **MCP** | LLM이 직접 DB·파일에 접속하지 않고, **표준화된 “도구 서버”**에 요청합니다. 여기서는 검색·파일 I/O가 MCP 도구로 노출됩니다. |
+| **에이전트** | 사용자 말을 이해하고 **어떤 도구를 호출할지** 정한 뒤, 결과를 바탕으로 답을 만듭니다. (`langchain.agents.create_agent`) |
 
-```text
-3. MCP with LangChain/
-├─ README.md
-├─ build_rag_index.py
-├─ mcp_with_langgraph_rag.py
-├─ common/
-│  ├─ elasticsearch_vector.py
-│  └─ ...
-├─ data/
-│  ├─ rag-keywords.txt
-│  └─ web-keywords.txt
-└─ elasticsearch/
-   ├─ docker-compose.yml
-   └─ README.md
+강의 계획에서 말하는 **에이전트(도구 호출) 층**은 `agent_with_mcp.py`에서 `create_agent`로 구현합니다.
+
+---
+
+## 2. 아키텍처(세 층으로 이해하기)
+
+세 층(아래 1·2·3항)은 **역할 구분**이고, 그림은 [Mermaid 시퀀스 다이어그램](https://mermaid.ai/community/templates/3)처럼 **질문 한 번이 처리될 때 누가 누구에게 무엇을 넘기는지**를 시간 순으로 보여 줍니다.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant U as 학생·터미널
+    participant A as ③ 에이전트층<br/>agent_with_mcp.py
+    participant M as ② MCP층<br/>mcp_servers.py
+    participant R as ① RAG층<br/>Elasticsearch
+    participant F as mcp_workspace
+
+    rect rgb(245, 245, 255)
+        Note over R, U: 사전 준비 (최초 또는 갱신 시)<br/>data/ → build_rag_index.py → ES 인덱스
+    end
+
+    U->>A: 질문
+    A->>M: 도구 호출 요청<br/>(langchain-mcp-adapters)
+    M->>R: rag_vector_search<br/>(common/elasticsearch_vector.py)
+    R-->>M: 유사 문단·메타데이터
+    M-->>A: 도구 결과 문자열
+    A-->>U: 최종 답변
+
+    Note over M, F: 파일이 필요하면 workspace_* 도구로 F와 읽기/쓰기
 ```
 
-## 1) 실습 환경 준비
+1. **RAG 층**  
+   - `data/`: 용어·설명 텍스트 (`rag-keywords.txt`, `web-keywords.txt` 등)  
+   - `elasticsearch/`: Docker로 ES·Kibana 실행  
+   - `common/elasticsearch_vector.py`: ES에 대한 **유사도 검색** 래퍼  
 
-### 1-1. Elasticsearch 실행
+2. **MCP 층**  
+   - `mcp_servers.py`: FastMCP로 만든 **stdio MCP 서버**(RAG·워크스페이스 도구 모음)  
+   - RAG 검색 도구 + `mcp_workspace/` 안에서만 동작하는 파일 도구  
+
+3. **에이전트 층**  
+   - `agent_with_mcp.py`: MCP 서버를 **자식 프로세스**로 띄우고, 도구 목록을 가져와 에이전트에 연결  
+
+---
+
+## 3. 사용 라이브러리 (`requirements.txt`)
+
+- **langchain**, **langchain-openai**: 채팅 모델·에이전트  
+- **langchain-mcp-adapters**: MCP 서버와 연결해 LangChain **Tool**로 변환  
+- **elasticsearch**: 인덱스 구축·검색 클라이언트  
+- **fastmcp**, **mcp**: MCP 서버 구현·프로토콜  
+- **python-dotenv**: `.env` 로드  
+
+---
+
+## 4. 사전 준비
+
+- Python 3.11+ 권장  
+- Docker Desktop (Elasticsearch용)  
+- OpenAI API 키 (`OPENAI_API_KEY`) — 임베딩·채팅에 사용  
+
+---
+
+## 5. 설치
+
+프로젝트 루트(이 `README.md`가 있는 폴더)에서:
+
+```bash
+python -m venv .venv
+```
+
+Windows:
+
+```powershell
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+```
+
+macOS / Linux:
+
+```bash
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+---
+
+## 6. 환경 변수 (`.env`)
+
+프로젝트 루트에 `.env` 파일을 만들고 예시처럼 채웁니다.
+
+```env
+OPENAI_API_KEY=sk-...
+# 선택: 임베딩 모델 (기본 text-embedding-3-small)
+# OPENAI_EMBEDDING_MODEL=text-embedding-3-small
+
+# Elasticsearch (docker-compose 기본값과 맞춤)
+ELASTICSEARCH_URL=http://localhost:9200
+ELASTIC_USER=elastic
+ELASTIC_PASSWORD=changeme123!
+
+# RAG 인덱스 이름 (build 스크립트·MCP 서버가 동일하게 사용)
+RAG_INDEX_NAME=course_rag_mcp
+
+# 선택: 워크스페이스 루트를 바꿀 때
+# MCP_WORKSPACE_ROOT=C:\path\to\workspace
+```
+
+비밀번호·URL은 `elasticsearch/docker-compose.yml`과 일치해야 합니다.
+
+---
+
+## 7. 실행 순서 (중요)
+
+### 7-1. Elasticsearch 기동
 
 ```bash
 cd elasticsearch
 docker-compose up -d
 ```
 
-상세 옵션은 `elasticsearch/README.md`를 참고하세요.
-
-### 1-2. Python 패키지 설치
+헬스 확인 예시:
 
 ```bash
-pip install langgraph langchain langchain-openai \
-            langchain-mcp-adapters elasticsearch python-dotenv
+curl -u elastic:changeme123! http://localhost:9200/_cluster/health
 ```
 
-필요 시 추가:
+자세한 설명은 `elasticsearch/README.md`를 참고합니다.
+
+### 7-2. RAG 인덱스 구축
+
+프로젝트 루트로 돌아와:
 
 ```bash
-pip install langchain-core typing-extensions
+python build_rag_index.py --recreate
 ```
 
-### 1-3. 환경 변수 설정(.env 예시)
+- `data/`의 지정 파일을 잘라서 임베딩 후 `RAG_INDEX_NAME` 인덱스에 넣습니다.  
+- 처음이거나 매핑을 바꿨을 때는 `--recreate`로 인덱스를 다시 만듭니다.
 
-```env
-# LLM
-OPENAI_API_KEY=your_openai_api_key
-OPENAI_MODEL=gpt-4o-mini
+### 7-3. 에이전트 실행
 
-# Embedding (OpenAI)
-OPENAI_EMBEDDING_MODEL=text-embedding-3-small
-
-# Elasticsearch
-ES_URL=http://localhost:9200
-ES_USER=elastic
-ES_PASSWORD=changeme123!
-ES_INDEX=course_keywords
-
-# MCP (옵션)
-# 미설정 시 기본값:
-# - MCP_SERVER_PYTHON=python
-# - MCP_SERVER_SCRIPT=../2. MCP with SQL/example_sql_mcp.py
-MCP_SERVER_PYTHON=python
-MCP_SERVER_SCRIPT=
-```
-
-`mcp_with_langgraph_rag.py` 실행 시 프로젝트 루트 아래 `mcp_workspace/`를 자동 생성하고,
-MCP 파일 도구(`fs_read_text_file`, `fs_write_text_file`)의 허용 루트로 사용합니다.
-
-## 2) RAG 인덱스 생성 예제
-
-아래 스크립트는 `data/rag-keywords.txt`, `data/web-keywords.txt`를 읽어
-문단 단위로 쪼갠 뒤 Elasticsearch 인덱스에 저장합니다.
-
-파일: `build_rag_index.py`
-
-```python
-import os
-from pathlib import Path
-from typing import List
-
-from elasticsearch import Elasticsearch
-from langchain_openai import OpenAIEmbeddings
-
-from common.elasticsearch_vector import ElasticsearchVectorStore
-
-
-def split_paragraphs(text: str) -> List[str]:
-    chunks = [c.strip() for c in text.split("\n\n") if c.strip()]
-    return chunks
-
-
-def ensure_index(es: Elasticsearch, index_name: str, dims: int = 1024) -> None:
-    if es.indices.exists(index=index_name):
-        return
-
-    mapping = {
-        "mappings": {
-            "properties": {
-                "text": {"type": "text"},
-                "embedding": {
-                    "type": "dense_vector",
-                    "dims": dims,
-                    "index": True,
-                    "similarity": "cosine",
-                },
-                "metadata": {"type": "object"},
-            }
-        }
-    }
-    es.indices.create(index=index_name, body=mapping)
-
-
-def main() -> None:
-    base_dir = Path(__file__).resolve().parent
-    data_dir = base_dir / "data"
-
-    es = Elasticsearch(
-        [os.getenv("ES_URL", "http://localhost:9200")],
-        basic_auth=(
-            os.getenv("ES_USER", "elastic"),
-            os.getenv("ES_PASSWORD", "changeme123!"),
-        ),
-        verify_certs=False,
-    )
-
-    index_name = os.getenv("ES_INDEX", "course_keywords")
-    embedding_model = os.getenv("OPENAI_EMBEDDING_MODEL", "text-embedding-3-small")
-    embeddings = OpenAIEmbeddings(model=embedding_model)
-
-    dims = len(embeddings.embed_query("dimension probe"))
-    ensure_index(es, index_name=index_name, dims=dims)
-
-    files = ["rag-keywords.txt", "web-keywords.txt"]
-    bulk_body = []
-
-    for fname in files:
-        text = (data_dir / fname).read_text(encoding="utf-8")
-        for i, chunk in enumerate(split_paragraphs(text)):
-            vec = embeddings.embed_query(chunk)
-            bulk_body.append({"index": {"_index": index_name}})
-            bulk_body.append(
-                {
-                    "text": chunk,
-                    "embedding": vec,
-                    "metadata": {"source": fname, "chunk_id": i},
-                }
-            )
-
-    if bulk_body:
-        es.bulk(operations=bulk_body, refresh=True)
-    print(f"Indexed chunks: {len(bulk_body) // 2} -> index={index_name}")
-
-    store = ElasticsearchVectorStore(
-        es_client=es,
-        index_name=index_name,
-        embeddings=embeddings,
-        k=3,
-    )
-    docs = store.similarity_search("Semantic Search가 뭐야?", k=2)
-    print("Sample retrieval:", len(docs))
-
-
-if __name__ == "__main__":
-    main()
-```
-
-실행:
+질문은 **명령줄 인자**로 넘깁니다. 에이전트가 필요하면 **MCP 도구**를 호출합니다.
 
 ```bash
-python build_rag_index.py
+python agent_with_mcp.py "임베딩이 뭐야?"
 ```
 
-## 3) LangGraph 워크플로우 코드 위치 변경
+인자 없이 실행하면 사용법이 표시됩니다.
 
-LangGraph 그래프 코드는 실행 스크립트와 분리해 `common`으로 이동했습니다.
+---
 
-- `RAG 경로`: 로컬 Elasticsearch 지식 베이스 검색
-- `MCP 경로`: MCP 서버 도구(SQL/API) 호출 후 답변
+## 8. MCP 서버만 단독 실행(선택)
 
-파일: `mcp_with_langgraph_rag.py`
-
-```python
-from common.langgraph_rag_workflow import run_graph
-import asyncio
-
-if __name__ == "__main__":
-    asyncio.run(run_graph("Semantic Search와 Embedding 차이를 설명해줘"))
-    asyncio.run(run_graph("고객별 주문 수를 SQL로 조회해줘"))
-```
-
-실행:
+에이전트 없이 MCP 프로토콜로 서버만 띄울 때(다른 클라이언트·IDE 연동용):
 
 ```bash
-python mcp_with_langgraph_rag.py
+python mcp_servers.py
 ```
 
-## 4) 강의 진행안 (90분 예시)
+HTTP(SSE)로 띄우려면(SQL 예제와 같이):
 
-### Part A. 아키텍처 이해 (15분)
+```bash
+python mcp_servers.py --sse
+```
 
-- 왜 RAG와 MCP를 같이 써야 하는가
-- 로컬 지식(벡터DB) vs 외부 실시간 데이터(API/DB) 분리 전략
-- LangGraph를 사용하는 이유(상태/분기/추적)
+포트 등은 환경변수 `MCP_HTTP_HOST`, `MCP_HTTP_PORT`로 조정할 수 있습니다.
 
-### Part B. 실습 1 - 인덱싱 (20분)
+---
 
-- `data/*.txt` 구조 확인
-- 청크 분리, 임베딩, ES 인덱스 생성
-- 샘플 유사도 검색 검증
+## 9. 제공 MCP 도구 요약
 
-### Part C. 실습 2 - LangGraph RAG (20분)
+| 도구 | 역할 |
+|------|------|
+| `rag_vector_search` | 질의와 유사한 **용어집 청크**를 ES에서 검색 |
+| `workspace_list_files` | `mcp_workspace` 아래 목록 보기 |
+| `workspace_read_text` | 허용 경로 내 텍스트 파일 읽기 |
+| `workspace_write_text` | 허용 경로에 텍스트 쓰기 (`create` / `overwrite`) |
 
-- State 설계 (`question`, `route`, `context`, `answer`)
-- `route -> retrieve -> answer` 그래프 연결
-- 하이브리드 검색 결과 품질 점검
+경로는 **워크스페이스 루트 밖으로 나가지 못하도록** 막혀 있습니다.
 
-### Part D. 실습 3 - MCP 도구 호출 (20분)
+---
 
-- MCP 서버 도구 목록 확인
-- 질문 기반 도구 선택 프롬프트 설계
-- DB 질의 / 외부 API 조회 결과 요약
+## 10. 디렉터리 가이드
 
-### Part E. 마무리 (15분)
+| 경로 | 설명 |
+|------|------|
+| `data/` | RAG에 넣을 원문 텍스트 |
+| `elasticsearch/` | ES·Kibana Docker 설정 |
+| `common/` | ES 벡터 검색용 `ElasticsearchVectorStore` |
+| `mcp_workspace/` | 학생 메모·실습 파일용(에이전트가 `workspace_*`로만 접근) |
+| `build_rag_index.py` | 인덱스 생성 스크립트 |
+| `mcp_servers.py` | MCP 서버(RAG + workspace 도구) |
+| `agent_with_mcp.py` | MCP + 에이전트 데모 진입점 |
 
-- 실패 케이스 분석(잘못된 라우팅, 검색 누락)
-- 개선 과제
-  - 라우터를 규칙 기반에서 LLM 기반 분류기로 교체
-  - 검색 재순위(Re-rank) 도입
-  - MCP 도구 호출 결과를 다시 RAG 컨텍스트에 합성
+---
 
-## 5) 실습 체크리스트
+## 11. 자주 겪는 문제
 
-- [ ] Elasticsearch 정상 실행 (`9200`, `5601`)
-- [ ] `build_rag_index.py` 인덱싱 성공
-- [ ] `mcp_with_langgraph_rag.py`에서 RAG/MCP 분기 동작 확인
-- [ ] 질문 유형별 응답 품질 비교 (개념형 vs 실시간 조회형)
+1. **`Elasticsearch ping 실패`**  
+   Docker가 떠 있는지, `.env`의 URL·계정이 compose 설정과 같은지 확인합니다.
 
-## 6) 트러블슈팅 핵심
+2. **검색 결과가 항상 비어 있음**  
+   `build_rag_index.py`를 실행했는지, `RAG_INDEX_NAME`이 빌드와 MCP 서버에서 동일한지 확인합니다.
 
-- ES 인증 오류(401): `ES_USER`, `ES_PASSWORD` 확인
-- 임베딩 모델 오류: `OPENAI_API_KEY`, `OPENAI_EMBEDDING_MODEL` 설정 확인
-- MCP 호출 실패: MCP 서버 실행 방식(`stdio`/`sse`)과 연결 파라미터 확인
-- 라우팅 실패: `mcp_keywords` 보강 또는 LLM 라우터로 교체
+3. **`OPENAI_API_KEY` 오류**  
+   `.env` 위치는 프로젝트 루트여야 하며, 키에 따옴표가 섞이지 않았는지 확인합니다.
+
+4. **Windows에서 스크립트 실행 정책**  
+   가상환경 활성화가 막히면 PowerShell 실행 정책을 조정하거나 `cmd`에서 `.\.venv\Scripts\activate.bat`을 사용합니다.
+
+---
+
+## 12. 강의에서 짚으면 좋은 포인트
+
+- **RAG**: “모델이 기억”이 아니라 **검색된 근거**를 붙여 답하는 구조임을 강조합니다.  
+- **MCP**: 도구의 **입출력 스키마**가 명확해지면, 에이전트·사람·다른 클라이언트가 같은 서버를 공유하기 쉽습니다.  
+- **에이전트**: 시스템 프롬프트(`agent_with_mcp.py`의 `SYSTEM_PROMPT`)가 **도구 사용 습관**을 바꿉니다. 실습으로 문구를 수정해 보게 할 수 있습니다.
