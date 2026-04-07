@@ -7,7 +7,7 @@ sentence-transformers==5.2.0
 evaluate==0.4.6
 tqdm==4.67.1
 python-dotenv==1.2.1
-lm-eval==0.4.9.2
+lm-eval==0.4.11
 ipykernel==6.29.5 
 jupyter-client==8.6.3
 jupyter==1.1.1 
@@ -15,4 +15,5 @@ jupyterlab==4.5.1
 ipywidgets==8.1.8 
 widgetsnbextension==4.0.15
 hf_xet==1.2.0
-
+transformers==5.5.0
+accelerate==1.13.0
