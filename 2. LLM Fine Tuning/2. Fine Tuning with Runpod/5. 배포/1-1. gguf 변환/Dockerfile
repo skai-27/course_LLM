@@ -36,27 +36,17 @@ RUN cmake -B build \
     && cmake --build build --config Release
 
 # ===============================
-# Python base
-# ===============================
-RUN pip install --upgrade pip
-
-# ===============================
 # Python GGUF stack (version pin)
 # ===============================
-RUN pip install \
-    gguf==0.6.0 \
-    transformers==4.40.2 \
-    sentencepiece==0.1.99 \
-    safetensors==0.4.3
+COPY requirements.txt /workspace/requirements.txt
+
+RUN python -m pip install --no-cache-dir --upgrade pip
+RUN python -m pip install --no-cache-dir \
+    -r /workspace/requirements.txt
 
 # ===============================
 # Jupyter kernel ONLY (server 실행 안 함)
 # ===============================
-RUN pip install \
-    ipykernel==6.29.4 \
-    jupyter-client==8.6.1 \
-    nbformat==5.10.4
-
 RUN python -m ipykernel install \
     --name llama-cpp \
     --display-name "Python (llama.cpp)"
@@ -74,8 +64,7 @@ RUN curl -fsSL https://code-server.dev/install.sh | sh \
 # ==================================================
 RUN /usr/bin/code-server \
     --install-extension ms-python.python \
-    --install-extension ms-toolsai.jupyter \
-    --install-extension ms-python.vscode-pylance
+    --install-extension ms-toolsai.jupyter
 
 # ===============================
 # Runtime cache (Volume friendly)

@@ -3,7 +3,6 @@
 docker build -t 도커허브아이디/gguf-runpod:0.6.0 .
 docker push 도커허브아이디/gguf-runpod:0.6.0
 
-
 docker run -it --rm -p 8888:8888 -v ./workspace:/workspace 도커허브아이디/gguf-runpod:0.6.0
 ```
 
