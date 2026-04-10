@@ -1,6 +1,6 @@
 # vLLM + Hugging Face (Hub에서 MODEL_NAME으로 가중치 로드)
 # 베이스 이미지에 CUDA·vLLM이 포함되어 있음 → 핸들러만 추가
-FROM vllm/vllm-openai:latest
+FROM vllm/vllm-openai:v0.4.2
 
 WORKDIR /
 

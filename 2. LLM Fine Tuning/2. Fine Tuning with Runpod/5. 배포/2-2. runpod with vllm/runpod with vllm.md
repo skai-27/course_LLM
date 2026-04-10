@@ -13,7 +13,7 @@ paginate: true
 
 ---
 ### 단계1: Docker Server 실행 및 로그인 
-![alt text](image.png)
+
 
 ---
 ### 단계2: Docker Image 생성
@@ -21,31 +21,70 @@ paginate: true
 # 도커파일이 있는 폴더에서 실행 
 docker build --platform linux/amd64 -t [YOUR_USERNAME]/runpod-vllm:latest .
 ```
-![alt text](image-1.png)
+
 
 ---
-![alt text](image-2.png)
+
 
 ---
 ### 단계3: Docker Hub 배포 
 ```shell
 docker push [YOUR_USERNAME]/runpod-vllm:latest
 ```
-![alt text](image-3.png)
+
 
 ---
-![alt text](image-4.png)
+
 
 ---
 # Runpod  
 
 ---
-### 단계 1: 템플릿 생성
+### [단계 1: Serverless Endpoint 생성](https://console.runpod.io/serverless)
+
+
+---
+### 단계2: Create a new deployment
+
+
+---
+> Container image
+
+
+---
+> Configure endpoint
 
 
 
+---
+> Create endpoint
 
 
 
+---
+### 단계3: Active Workers 적용 
+> cold Start 문제 해결 
+
+
+
+---
+> Active Workers 설정 
+
+
+
+---
+> (옵션) Environment Variables 
+
+
+
+---
+### 단계4: 배포 확인
+
+
+---
+### 단계5: 테스트 
+
+
+---
 
 
