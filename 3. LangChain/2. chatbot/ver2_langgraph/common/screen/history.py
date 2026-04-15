@@ -1,10 +1,10 @@
 import streamlit as st 
+import uuid
+from .display import print_history_message
 
 def create_history():
     if "messages" not in st.session_state:
         st.session_state.messages = [] # 초기화!!! 
+        st.session_state.memory_id = str(uuid.uuid4())
     else:
-        # 기존에 챗봇 이력 데이터 프린트 
-        for message in st.session_state.messages:
-            with st.chat_message(message["role"]):
-                st.markdown(message["content"]) 
+        print_history_message()

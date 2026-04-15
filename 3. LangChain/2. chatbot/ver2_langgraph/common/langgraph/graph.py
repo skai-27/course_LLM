@@ -1,6 +1,7 @@
 from langgraph.graph import StateGraph, END, START 
 import streamlit as st
 
+from common.db.checkpointer import get_checkpointer
 from .state import AgentState
 from .nodes import call_model, tool_node
 
@@ -18,7 +19,7 @@ def __is_continue(sate: AgentState):
         return "continue"
 
 @st.cache_resource
-def create_graph():
+def create_graph(add_checkpointer:bool=True):
     workflow = StateGraph(AgentState)
 
     workflow.add_node("agent", call_model)
@@ -39,5 +40,8 @@ def create_graph():
     )
     workflow.add_edge("tools", "agent")
 
-    return workflow.compile()
+    if add_checkpointer:
+        return workflow.compile(checkpointer=get_checkpointer())
+    else:
+        return workflow.compile()
     

@@ -1,10 +1,17 @@
 ######################################
+# 환경변수 등록 
+######################################
+from dotenv import load_dotenv
+
+load_dotenv()
+
+######################################
 # 웹서비스 
 ######################################
 import streamlit as st 
 from common.langgraph.run import response_of_llm
 from common.screen.history import create_history
-from common.screen.display import print_history_message, print_message
+from common.screen.display import print_message
 
 st.title("챗봇 서비스")
 
@@ -12,7 +19,6 @@ st.title("챗봇 서비스")
 # 챗봇 히스토리
 ######################################
 create_history()
-print_history_message()
 
 ######################################
 # 챗봇 - 사용자의 문의
