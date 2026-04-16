@@ -4,6 +4,11 @@ RunPod Serverless + vLLM + Hugging Face Hub 모델 예제.
 - 모델은 Hugging Face repo ID(MODEL_NAME)에서 받습니다.
 - 게이트 모델이면 RunPod 시크릿/환경 변수에 HF_TOKEN 을 넣습니다.
 """
+import transformers
+import vllm
+print(f"DEBUG: Transformers Version -> {transformers.__version__}")
+print(f"DEBUG: vLLM Version -> {vllm.__version__}")
+
 import os
 from typing import Optional
 
@@ -19,8 +24,7 @@ def _get_llm() -> LLM:
     if _llm is None:
         _llm = LLM(
             model=MODEL_NAME,
-            trust_remote_code=os.getenv("TRUST_REMOTE_CODE", "false").lower()
-            == "true",
+            trust_remote_code=True,
         )
     return _llm
 
