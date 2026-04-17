@@ -25,6 +25,9 @@ def _get_llm() -> LLM:
         _llm = LLM(
             model=MODEL_NAME,
             trust_remote_code=True,
+            dtype="bfloat16",           # Gemma3 권장 dtype
+            max_model_len=2048,         # OOM 방지: 컨텍스트 길이 제한
+            gpu_memory_utilization=0.90, # GPU 메모리 90% 사용
         )
     return _llm
 
