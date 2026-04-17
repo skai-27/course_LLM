@@ -44,17 +44,9 @@ WORKDIR /app/LLaMA-Factory
 # LLaMA-Factory 의존성 설치 (metrics, 웹UI 포함)
 RUN pip install -e ".[torch,metrics]"
 
-# Flash Attention 2 설치 (학습 속도 향상)
-RUN pip install flash-attn --no-build-isolation
-
-# bitsandbytes 설치 (양자화 지원)
-RUN pip install bitsandbytes
-
-# wandb 설치 (WebUI 학습 모니터링)
-RUN pip install wandb
-
-# huggingface hub 설치
-RUN pip install huggingface_hub datasets
+# requirements.txt 복사 및 의존성 설치
+COPY requirements.txt /app/requirements.txt
+RUN pip install -r /app/requirements.txt --no-build-isolation
 
 # -----------------------------------------------
 # illnesses-dataset을 GUI 드롭다운에 표시하기 위해
