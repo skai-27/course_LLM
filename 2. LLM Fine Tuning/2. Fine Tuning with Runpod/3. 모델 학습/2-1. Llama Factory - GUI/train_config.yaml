@@ -1,0 +1,59 @@
+# =====================================================================
+# [참고용] LLaMA-Factory GUI에서 DoRA 설정 시 생성되는 YAML 예시
+#
+# ⚠️ 이 파일은 CLI 학습에 사용하는 파일이 아닙니다.
+#    GUI(WebUI)에서 "Preview Command" 버튼을 클릭하면
+#    아래와 같은 설정이 자동 생성됩니다.
+#    실제 학습은 WebUI에서 "Start" 버튼으로 실행하세요.
+# =====================================================================
+
+### 모델 설정
+model_name_or_path: Qwen/Qwen2.5-2B-Instruct
+
+### 학습 단계 (sft: Supervised Fine-Tuning)
+stage: sft
+do_train: true
+
+### 파인튜닝 방식 (LoRA + DoRA 활성화)
+finetuning_type: lora
+use_dora: true              # ← DoRA 핵심 설정 (GUI에서 "Use DoRA" 체크)
+
+### LoRA 하이퍼파라미터
+lora_rank: 16
+lora_alpha: 32
+lora_dropout: 0.05
+lora_target: all
+
+### 데이터셋 설정
+dataset: illnesses_dataset  # ← GUI 드롭다운에서 선택
+dataset_dir: /app/LLaMA-Factory/data
+template: qwen
+cutoff_len: 1024
+
+### 출력 설정
+output_dir: saves/Qwen2.5-2B-Instruct/lora/train_2024
+overwrite_output_dir: true
+save_steps: 100
+logging_steps: 10
+plot_loss: true
+
+### 학습 하이퍼파라미터
+per_device_train_batch_size: 2
+gradient_accumulation_steps: 8
+learning_rate: 5.0e-5
+num_train_epochs: 3.0
+lr_scheduler_type: cosine
+warmup_ratio: 0.1
+weight_decay: 0.01
+
+### 정밀도 설정
+bf16: true    # RTX 시리즈 사용 시: bf16: false / fp16: true
+
+### Flash Attention 2
+flash_attn: fa2
+
+### 검증 설정
+val_size: 0.1
+evaluation_strategy: steps
+eval_steps: 100
+per_device_eval_batch_size: 2
