@@ -8,7 +8,7 @@
 # =====================================================================
 
 ### 모델 설정
-model_name_or_path: Qwen/Qwen2.5-2B-Instruct
+model_name_or_path: Qwen/Qwen3.5-2B
 
 ### 학습 단계 (sft: Supervised Fine-Tuning)
 stage: sft
@@ -31,7 +31,7 @@ template: qwen
 cutoff_len: 1024
 
 ### 출력 설정
-output_dir: saves/Qwen2.5-2B-Instruct/lora/train_2024
+output_dir: saves/Qwen3.5-2B/lora/train_2024
 overwrite_output_dir: true
 save_steps: 100
 logging_steps: 10

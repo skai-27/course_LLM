@@ -6,7 +6,7 @@
 |------|------|
 | 학습 방법 | **DoRA** (DoRA = LoRA + `use_dora: true`, GUI에서 체크박스로 활성화) |
 | 학습 데이터 | [good593/illnesses-dataset](https://huggingface.co/datasets/good593/illnesses-dataset) (793건) |
-| 학습 모델 | [Qwen/Qwen2.5-2B-Instruct](https://huggingface.co/Qwen/Qwen2.5-2B-Instruct) |
+| 학습 모델 | [Qwen/Qwen3.5-2B](https://huggingface.co/Qwen/Qwen3.5-2B) |
 | 학습 방식 | **LLaMA-Factory WebUI (GUI)** 로 브라우저에서 클릭하여 학습 |
 | 베이스 이미지 | `nvidia/cuda:12.1.1-devel-ubuntu22.04` |
 

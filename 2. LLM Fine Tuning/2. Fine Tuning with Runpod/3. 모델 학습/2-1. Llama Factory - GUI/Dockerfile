@@ -1,6 +1,6 @@
 # =====================================================
 # LLaMA Factory - WebUI (GUI) Fine-tuning Docker Image
-# 학습모델: Qwen/Qwen2.5-2B-Instruct
+# 학습모델: Qwen/Qwen3.5-2B
 # 학습방법: DoRA (GUI에서 설정)
 # 학습데이터: good593/illnesses-dataset (GUI 드롭다운으로 선택)
 # =====================================================
