@@ -44,10 +44,16 @@
 ### 1단계: Docker 이미지 빌드
 
 ```bash
-docker build -t llamafactory-gui .
+docker build --platform linux/amd64 -t [YOUR_USERNAME]/llamafactory-gui-runpod:0.9.2 .
 ```
 
-### 2단계: 컨테이너 실행 (RunPod에서)
+### 2단계: Docker Hub 배포
+
+```bash
+docker push [YOUR_USERNAME]/llamafactory-gui-runpod:0.9.2
+```
+
+### 3단계: 컨테이너 실행 (RunPod에서)
 
 ```bash
 docker run --gpus all --shm-size 32G \

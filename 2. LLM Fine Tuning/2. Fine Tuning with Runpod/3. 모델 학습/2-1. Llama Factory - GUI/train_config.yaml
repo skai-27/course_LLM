@@ -7,7 +7,7 @@
 #    실제 학습은 WebUI에서 "Start" 버튼으로 실행하세요.
 # =====================================================================
 
-### 모델 설정
+### 모델 설정 
 model_name_or_path: Qwen/Qwen3.5-2B
 
 ### 학습 단계 (sft: Supervised Fine-Tuning)
@@ -31,7 +31,7 @@ template: qwen
 cutoff_len: 1024
 
 ### 출력 설정
-output_dir: saves/Qwen3.5-2B/lora/train_2024
+output_dir: saves/Qwen3.5-2B/lora/train
 overwrite_output_dir: true
 save_steps: 100
 logging_steps: 10

@@ -37,12 +37,25 @@ RUN pip install torch==2.3.0 torchvision==0.18.0 torchaudio==2.3.0 \
     --index-url https://download.pytorch.org/whl/cu121
 
 # LLaMA-Factory 설치
-RUN git clone --depth 1 https://github.com/hiyouga/LLaMA-Factory.git /app/LLaMA-Factory
+RUN git clone --depth 1 --branch v0.9.2 https://github.com/hiyouga/LLaMA-Factory.git /app/LLaMA-Factory
 
 WORKDIR /app/LLaMA-Factory
 
 # LLaMA-Factory 의존성 설치 (metrics, 웹UI 포함)
 RUN pip install -e ".[torch,metrics]"
+
+# -----------------------------------------------
+# RunPod 환경 패치: Gradio가 0.0.0.0에 바인딩되도록
+# interface.py의 server_name 변수와 inbrowser 옵션을 수정합니다.
+# - server_name: localhost → 0.0.0.0 (RunPod 프록시 접근 허용)
+# - inbrowser=True → False (서버 환경에서 브라우저 자동 실행 불필요)
+# -----------------------------------------------
+RUN sed -i 's/server_name=server_name/server_name="0.0.0.0"/g' \
+        /app/LLaMA-Factory/src/llamafactory/webui/interface.py && \
+    sed -i 's/inbrowser=True/inbrowser=False/g' \
+        /app/LLaMA-Factory/src/llamafactory/webui/interface.py && \
+    echo "[PATCH] interface.py 패치 완료" && \
+    grep -n "server_name\|inbrowser" /app/LLaMA-Factory/src/llamafactory/webui/interface.py
 
 # requirements.txt 복사 및 의존성 설치
 COPY requirements.txt /app/requirements.txt
@@ -60,5 +73,13 @@ EXPOSE 7860
 # 시작 스크립트 복사 및 실행 권한 부여
 COPY start.sh /app/start.sh
 RUN chmod +x /app/start.sh
+
+# -----------------------------------------------
+# 학습 완료 후 HuggingFace 업로드 스크립트
+# [사용법] 학습 완료 후 SSH 터미널에서:
+#   bash /app/upload_model.sh
+# -----------------------------------------------
+COPY upload_model.sh /app/upload_model.sh
+RUN chmod +x /app/upload_model.sh
 
 ENTRYPOINT ["/app/start.sh"]
