@@ -29,6 +29,18 @@ fi
 export GRADIO_SERVER_NAME="0.0.0.0"
 export GRADIO_SERVER_PORT="7860"
 
+# -----------------------------------------------
+# [안내] training_args.yaml 설정이 GUI에 자동 반영되어 있습니다.
+# GUI 하단에서:
+#   1. '출력 디렉토리' → my_train_config 선택
+#   2. '설정 경로'     → training_args.yaml 선택
+#   3. [Argument 불러오기] 클릭 → 모든 설정 자동 반영!
+# -----------------------------------------------
+echo "[INFO] training_args.yaml 설정이 GUI에 준비되어 있습니다."
+echo "[INFO]   출력 디렉토리: my_train_config"
+echo "[INFO]   설정 경로:     training_args.yaml"
+echo "[INFO]   → GUI에서 [Argument 불러오기] 클릭하면 설정이 자동 반영됩니다."
+
 # LLaMA-Factory WebUI 실행
 cd /app/LLaMA-Factory
 echo "[INFO] WebUI 시작 중... 브라우저에서 포트 7860에 접속하세요."

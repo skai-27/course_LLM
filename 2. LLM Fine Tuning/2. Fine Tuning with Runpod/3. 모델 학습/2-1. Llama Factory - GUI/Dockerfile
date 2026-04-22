@@ -20,6 +20,11 @@ WORKDIR /app/LLaMA-Factory
 # -----------------------------------------------
 COPY dataset_info.json /app/LLaMA-Factory/data/dataset_info.json
 
+# GUI '설정 경로' 드롭다운에 자동 표시:
+# - 출력 디렉토리: my_train_config
+# - 설정 경로:     training_args.yaml  (LLaMA Factory 내부 상수명)
+COPY training_args.yaml /app/LLaMA-Factory/saves/my_train_config/training_args.yaml
+
 # WebUI 포트 개방
 EXPOSE 7860
 
