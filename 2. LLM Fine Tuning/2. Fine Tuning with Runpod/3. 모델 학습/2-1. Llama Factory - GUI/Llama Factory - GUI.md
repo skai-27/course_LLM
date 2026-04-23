@@ -113,9 +113,9 @@ docker push [YOUR_USERNAME]/llamafactory-gui-runpod:0.9.2
 
 ---
 ### 단계3: training_args.yaml 적용
+![alt text](image-11.png)
 
-
-
+---
 
 
 

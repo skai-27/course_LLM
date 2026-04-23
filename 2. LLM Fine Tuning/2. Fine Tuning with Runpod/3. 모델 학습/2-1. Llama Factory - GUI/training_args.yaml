@@ -1,59 +1,49 @@
 # =====================================================================
-# [참고용] LLaMA-Factory GUI에서 DoRA 설정 시 생성되는 YAML 예시
+# LLaMA-Factory WebUI - GUI 설정 파일
 #
-# ⚠️ 이 파일은 CLI 학습에 사용하는 파일이 아닙니다.
-#    GUI(WebUI)에서 "Preview Command" 버튼을 클릭하면
-#    아래와 같은 설정이 자동 생성됩니다.
-#    실제 학습은 WebUI에서 "Start" 버튼으로 실행하세요.
+# ⚠️ 이 파일은 GUI elem_id 형식으로 작성된 파일입니다.
+#    GUI 하단 [Argument 불러오기] 버튼으로 로드하면
+#    화면의 각 항목에 자동으로 값이 채워집니다.
 # =====================================================================
 
-### 모델 설정 
-model_name_or_path: Qwen/Qwen3.5-2B
+# 모델 설정 (top 섹션)
+top.model_name: Qwen2.5-3B          # GUI 드롭다운 모델명 (Qwen2.5-3B 선택)
+top.model_path: Qwen/Qwen2.5-3B    # HuggingFace 모델 경로
+top.finetuning_type: lora
+top.template: qwen
+top.booster: flashattn2             # Flash Attention 2 활성화
 
-### 학습 단계 (sft: Supervised Fine-Tuning)
-stage: sft
-do_train: true
+# 학습 설정 (train 섹션)
+train.training_stage: Supervised Fine-Tuning
+train.dataset_dir: data
+train.dataset:
+  - illnesses_dataset
 
-### 파인튜닝 방식 (LoRA + DoRA 활성화)
-finetuning_type: lora
-use_dora: true              # ← DoRA 핵심 설정 (GUI에서 "Use DoRA" 체크)
+# 학습 하이퍼파라미터
+train.learning_rate: "5e-5"
+train.num_train_epochs: "3.0"
+train.max_grad_norm: "1.0"
+train.max_samples: "100000"
+train.compute_type: bf16
 
-### LoRA 하이퍼파라미터
-lora_rank: 16
-lora_alpha: 32
-lora_dropout: 0.05
-lora_target: all
+# 배치 & 시퀀스
+train.cutoff_len: 1024
+train.batch_size: 2
+train.gradient_accumulation_steps: 8
+train.val_size: 0.1
+train.lr_scheduler_type: cosine
 
-### 데이터셋 설정
-dataset: illnesses_dataset  # ← GUI 드롭다운에서 선택
-dataset_dir: /app/LLaMA-Factory/data
-template: qwen
-cutoff_len: 1024
+# 추가 구성
+train.logging_steps: 10
+train.save_steps: 100
+train.warmup_steps: 0
 
-### 출력 설정
-output_dir: saves/Qwen3.5-2B/lora/train
-overwrite_output_dir: true
-save_steps: 100
-logging_steps: 10
-plot_loss: true
+# LoRA 구성
+train.lora_rank: 16
+train.lora_alpha: 32
+train.lora_dropout: 0.05
+train.lora_target: ""
+train.use_dora: true
 
-### 학습 하이퍼파라미터
-per_device_train_batch_size: 2
-gradient_accumulation_steps: 8
-learning_rate: 5.0e-5
-num_train_epochs: 3.0
-lr_scheduler_type: cosine
-warmup_ratio: 0.1
-weight_decay: 0.01
-
-### 정밀도 설정
-bf16: true    # RTX 시리즈 사용 시: bf16: false / fp16: true
-
-### Flash Attention 2
-flash_attn: fa2
-
-### 검증 설정
-val_size: 0.1
-evaluation_strategy: steps
-eval_steps: 100
-per_device_eval_batch_size: 2
+# 출력 디렉토리 (saves/{model}/{finetuning_type}/ 아래 폴더명)
+train.output_dir: train_illnesses_dora
