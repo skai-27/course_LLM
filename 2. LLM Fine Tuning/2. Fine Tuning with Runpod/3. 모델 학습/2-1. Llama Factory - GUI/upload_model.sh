@@ -15,10 +15,10 @@ set -e
 # -----------------------------------------------
 # 설정값 (필요시 수정)
 # -----------------------------------------------
-BASE_MODEL="Qwen/Qwen3.5-2B"
-ADAPTER_DIR="/app/LLaMA-Factory/saves/Qwen3.5-2B/lora/train"
+BASE_MODEL="Qwen/Qwen2.5-3B"
+ADAPTER_DIR="/app/LLaMA-Factory/saves/Qwen2.5-3B/lora/train_illnesses_dora"
 MERGED_OUTPUT_DIR="/app/merged_model"
-HF_REPO="good593/qwen3.5-2b-dora-finetuning-illnesses"
+HF_REPO="good593/qwen2.5-3b-dora-illnesses"
 
 # -----------------------------------------------
 # 사전 체크
@@ -126,10 +126,10 @@ api.upload_folder(
     folder_path="${MERGED_OUTPUT_DIR}",
     repo_id="${HF_REPO}",
     repo_type="model",
-    commit_message="Upload fine-tuned Qwen3.5-2B (DoRA) model trained on illnesses-dataset",
+    commit_message="Upload fine-tuned Qwen2.5-3B (DoRA) model trained on illnesses-dataset",
 )
 print(f"[Python] 업로드 완료!")
-print(f"[Python] 모델 URL: https://huggingface.co/${HF_REPO}")
+print(f"[Python] 모델 URL: https://huggingface.co/{os.environ.get('HF_REPO', '${HF_REPO}')}")
 EOF
 
 # -----------------------------------------------

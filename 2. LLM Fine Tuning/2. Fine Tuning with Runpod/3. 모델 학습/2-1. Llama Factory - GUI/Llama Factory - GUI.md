@@ -90,6 +90,9 @@ docker push [YOUR_USERNAME]/llamafactory-gui-runpod:0.9.2
 
 ---
 ### [단계1: GPU Pod 생성](https://console.runpod.io/deploy)
+- RTX 5090 → Blackwell(sm_120) → 0.9.4 이미지와 호환 안됨
+- 그 외 모든 GPU(RTX 3090, RTX 4090 (24GB)) → Ampere/Ada 계열 → 0.9.4 이미지로 DoRA 포함 정상 작동
+
 ![alt text](image-5.png)
 
 ---
@@ -116,10 +119,29 @@ docker push [YOUR_USERNAME]/llamafactory-gui-runpod:0.9.2
 ![alt text](image-11.png)
 
 ---
+![alt text](image-12.png)
 
+---
+![alt text](image-13.png)
 
+---
+### 단계4: 훈련 시작
 
+![alt text](image-14.png)
 
+---
+> 학습 완료 
+
+![alt text](image-15.png)
+
+---
+### 단계5: HuggingFace 업로드
+![bg right w:600](image-16.png)
+
+---
+```shell
+bash /app/upload_model.sh
+```
 
 
 
