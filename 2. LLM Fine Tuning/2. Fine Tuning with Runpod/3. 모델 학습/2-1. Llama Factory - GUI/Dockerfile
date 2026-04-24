@@ -37,6 +37,8 @@ RUN chmod +x /app/start.sh
 #   bash /app/upload_model.sh
 # -----------------------------------------------
 COPY upload_model.sh /app/upload_model.sh
+COPY merge_model.py /app/merge_model.py
+COPY upload_to_hf.py /app/upload_to_hf.py
 RUN chmod +x /app/upload_model.sh
 
 ENTRYPOINT ["/app/start.sh"]

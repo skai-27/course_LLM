@@ -12,6 +12,9 @@
 
 set -e
 
+# 스크립트가 위치한 디렉토리 (Python 파일 경로 참조용)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 # -----------------------------------------------
 # 설정값 (필요시 수정)
 # -----------------------------------------------
@@ -65,33 +68,7 @@ echo "           (시간이 다소 걸릴 수 있습니다)"
 
 mkdir -p "$MERGED_OUTPUT_DIR"
 
-python3 - <<EOF
-from transformers import AutoModelForCausalLM, AutoTokenizer
-from peft import PeftModel
-import torch
-
-print("[Python] 베이스 모델 로딩 중...")
-base_model = AutoModelForCausalLM.from_pretrained(
-    "${BASE_MODEL}",
-    torch_dtype=torch.float16,
-    device_map="auto",
-    trust_remote_code=True,
-)
-tokenizer = AutoTokenizer.from_pretrained(
-    "${BASE_MODEL}",
-    trust_remote_code=True,
-)
-
-print("[Python] LoRA 어댑터 적용 중...")
-model = PeftModel.from_pretrained(base_model, "${ADAPTER_DIR}")
-
-print("[Python] 어댑터 Merge 및 저장 중...")
-model = model.merge_and_unload()
-model.save_pretrained("${MERGED_OUTPUT_DIR}", safe_serialization=True)
-tokenizer.save_pretrained("${MERGED_OUTPUT_DIR}")
-
-print("[Python] Merge 완료 → ${MERGED_OUTPUT_DIR}")
-EOF
+python3 "${SCRIPT_DIR}/merge_model.py" "${BASE_MODEL}" "${ADAPTER_DIR}" "${MERGED_OUTPUT_DIR}"
 
 echo "[INFO] Merge 완료"
 
@@ -102,35 +79,7 @@ echo ""
 echo "[STEP 3/3] HuggingFace Hub에 업로드 중..."
 echo "           대상 레포: ${HF_REPO}"
 
-python3 - <<EOF
-from huggingface_hub import HfApi
-import os
-
-api = HfApi()
-
-# 레포 생성 (이미 존재하면 그냥 사용)
-try:
-    api.create_repo(
-        repo_id="${HF_REPO}",
-        repo_type="model",
-        private=False,
-        exist_ok=True,
-    )
-    print(f"[Python] 레포 확인/생성 완료: ${HF_REPO}")
-except Exception as e:
-    print(f"[Python] 레포 생성 중 오류 (무시): {e}")
-
-# 모델 파일 업로드
-print("[Python] 파일 업로드 중...")
-api.upload_folder(
-    folder_path="${MERGED_OUTPUT_DIR}",
-    repo_id="${HF_REPO}",
-    repo_type="model",
-    commit_message="Upload fine-tuned Qwen2.5-3B (DoRA) model trained on illnesses-dataset",
-)
-print(f"[Python] 업로드 완료!")
-print(f"[Python] 모델 URL: https://huggingface.co/{os.environ.get('HF_REPO', '${HF_REPO}')}")
-EOF
+python3 "${SCRIPT_DIR}/upload_to_hf.py" "${MERGED_OUTPUT_DIR}" "${HF_REPO}"
 
 # -----------------------------------------------
 # 완료

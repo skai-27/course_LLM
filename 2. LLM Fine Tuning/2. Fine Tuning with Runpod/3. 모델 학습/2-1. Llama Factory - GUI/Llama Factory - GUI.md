@@ -47,7 +47,7 @@ paginate: true
 | GUI 설정 | Fine-tuning Method: LoRA | LoRA 선택 후 **"Use DoRA" 체크** |
 
 ---
-![alt text](image-10.png)
+![alt text](./img/image-10.png)
 
 ---
 ## 파일 구조
@@ -63,27 +63,27 @@ Llama Factory - GUI/
 ```
 ---
 ## Docker 
-![alt text](image.png)
+![alt text](./img/image.png)
 
 ---
 ### 단계1: Docker 이미지 빌드
 ```bash
 docker build --platform linux/amd64 -t [YOUR_USERNAME]/llamafactory-gui-runpod:0.9.2 .
 ```
-![alt text](image-1.png)
+![alt text](./img/image-1.png)
 
 ---
-![alt text](image-2.png)
+![alt text](./img/image-2.png)
 
 ---
 ### 단계2: Docker Hub 배포
 ```bash
 docker push [YOUR_USERNAME]/llamafactory-gui-runpod:0.9.2
 ```
-![alt text](image-3.png)
+![alt text](./img/image-3.png)
 
 ---
-![alt text](image-4.png)
+![alt text](./img/image-4.png)
 
 ---
 ## Runpod 모델 학습
@@ -93,55 +93,60 @@ docker push [YOUR_USERNAME]/llamafactory-gui-runpod:0.9.2
 - RTX 5090 → Blackwell(sm_120) → 0.9.4 이미지와 호환 안됨
 - 그 외 모든 GPU(RTX 3090, RTX 4090 (24GB)) → Ampere/Ada 계열 → 0.9.4 이미지로 DoRA 포함 정상 작동
 
-![alt text](image-5.png)
+![alt text](./img/image-5.png)
 
 ---
 > Configure deployment
 
-![alt text](image-6.png)
+![alt text](./img/image-6.png)
 
 ---
 > Pod template overrides 
 
-![bg right w:600](image-7.png)
+![bg right w:600](./img/image-7.png)
 
 ---
 > Deploy On-Demand
 
-![alt text](image-8.png)
+![alt text](./img/image-8.png)
 
 ---
 ### 단계2: Llama Factory WebUI 접속
-![alt text](image-9.png)
+![alt text](./img/image-9.png)
 
 ---
 ### 단계3: training_args.yaml 적용
-![alt text](image-11.png)
+![alt text](./img/image-11.png)
 
 ---
-![alt text](image-12.png)
+![alt text](./img/image-12.png)
 
 ---
-![alt text](image-13.png)
+![alt text](./img/image-13.png)
 
 ---
 ### 단계4: 훈련 시작
 
-![alt text](image-14.png)
+![alt text](./img/image-14.png)
 
 ---
 > 학습 완료 
 
-![alt text](image-15.png)
+![alt text](./img/image-15.png)
 
 ---
 ### 단계5: HuggingFace 업로드
-![bg right w:600](image-16.png)
+![bg right w:600](./img/image-16.png)
 
 ---
+> Upload model to HuggingFace Hub
 ```shell
 bash /app/upload_model.sh
 ```
+![alt text](./img/image-17.png)
 
+---
+> [HuggingFace Hub](https://huggingface.co/good593/qwen2.5-3b-dora-illnesses)에서 업로드된 모델 확인 
 
+![alt text](./img/image-18.png)
 
