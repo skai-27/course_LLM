@@ -26,7 +26,7 @@ paginate: true
 - **모델**: LLaMA, Mistral, Qwen, Gemma, Phi, ChatGLM 등 100개 이상
 - **학습 방식**:
   - Full Fine-tuning (전체 학습)
-  - **LoRA** / **QLoRA** 
+  - **LoRA** / **QLoRA** / **DoRA** 
   - RLHF (보상 기반 강화학습)
   - DPO, PPO, ORPO 등 최신 기법
 - **인터페이스**:
@@ -39,7 +39,21 @@ paginate: true
 
 ---
 ## DoRA (Weight-Decomposed LoRA)란?
+- DoRA는 모델의 가중치를 **크기(Magnitude)** + **방향(Direction)** 으로 분해하여 학습하는 방식
+- **장점**: 
+  - Full Fine-tuning과 유사한 성능
+  - 더 적은 GPU 메모리 사용
 
+---
+### DoRA 작동 방식
+> DoRA는 LoRA에 두 가지 트릭을 추가한 구조
+1. **Per-column Normalization**: 행렬의 각 열(column)을 **개별적으로 정규화**
+2. **Per-column Rescale Vector**: 각 열에 대한 스케일링 벡터(m)를 별도 학습
+
+![bg right w:600](./img/image-19.png)
+
+---
+### LoRA vs DoRA
 | 항목 | LoRA | DoRA |
 |------|------|------|
 | 방식 | 저랭크 행렬 추가 | 가중치를 크기(magnitude) + 방향(direction)으로 분해 |
@@ -47,22 +61,12 @@ paginate: true
 | GUI 설정 | Fine-tuning Method: LoRA | LoRA 선택 후 **"Use DoRA" 체크** |
 
 ---
+> DoRA 설정 예시
+
 ![alt text](./img/image-10.png)
 
 ---
-## 파일 구조
-
-```
-Llama Factory - GUI/
-├── Dockerfile           # Docker 이미지 빌드 (WebUI 자동 실행)
-├── start.sh             # WebUI 시작 스크립트
-├── dataset_info.json    # illnesses-dataset을 GUI 드롭다운에 등록
-├── train_config.yaml    # [참고용] GUI에서 생성되는 YAML 예시
-├── requirements.txt     # Python 패키지 목록
-└── .env.example         # 환경변수 예제 (HF_TOKEN, WANDB_API_KEY)
-```
----
-## Docker 
+## Docker
 ![alt text](./img/image.png)
 
 ---
