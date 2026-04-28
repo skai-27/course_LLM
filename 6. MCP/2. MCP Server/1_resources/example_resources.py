@@ -1,21 +1,23 @@
 from __future__ import annotations
 
+import json
+
 from fastmcp import FastMCP
 
 mcp = FastMCP("Course — Resources only")
 
 
 @mcp.resource("course://syllabus")
-def get_syllabus() -> dict:
+def get_syllabus() -> str:
     """이 모듈에서 다루는 MCP 서버 구성 요소 요약."""
-    return {
+    return json.dumps({
         "modules": [
             {"name": "Resources", "role": "read-only data by URI"},
             {"name": "Tools", "role": "functions the LLM can invoke"},
             {"name": "Prompts", "role": "parameterized message templates"},
         ],
         "sdk": "FastMCP",
-    }
+    }, ensure_ascii=False, indent=2)
 
 
 @mcp.resource("course://glossary/{term}")
