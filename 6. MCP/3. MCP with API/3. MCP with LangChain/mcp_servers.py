@@ -1,3 +1,4 @@
+import argparse
 import asyncio
 import os
 import sys
@@ -123,12 +124,18 @@ def _http_bind() -> tuple[str, int]:
 
 
 def main() -> None:
-    argv = set(sys.argv[1:])
-    if "--sse" in argv:
+    parser = argparse.ArgumentParser(description="MCP 서버 실행")
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument("--sse", action="store_true", help="SSE transport로 실행")
+    group.add_argument("--streamable-http", action="store_true", help="Streamable HTTP transport로 실행")
+    group.add_argument("--http", action="store_true", help="HTTP transport로 실행")
+    args = parser.parse_args()
+
+    if args.sse:
         transport = "sse"
-    elif "--streamable-http" in argv:
+    elif args.streamable_http:
         transport = "streamable-http"
-    elif "--http" in argv:
+    elif args.http:
         transport = "http"
     else:
         mcp.run()
