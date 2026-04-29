@@ -79,15 +79,19 @@ async def run_once(question: str) -> str:
 
     도구 목록과 도구 호출이 같은 세션을 쓰도록 session + load_mcp_tools(session)을 사용한다.
     """
+    # 1. MCP Server 접속 설정값 딕셔너리
     connections = _mcp_connections()
+    # 2. MCP Client 생성 
     client = MultiServerMCPClient(connections)
     conn = connections[_MCP_SERVER_NAME]
     transport = conn.get("transport", "?")
     endpoint = conn.get("url") or f"{sys.executable} {MCP_SERVER_SCRIPT}"
 
     t_session = time.perf_counter()
+    # 3. MCP Client를 통한 MCP Server 호출 
     async with client.session(_MCP_SERVER_NAME) as session:
         t_tools = time.perf_counter()
+        # 4. MCP Server의 tool 호출 
         tools = await load_mcp_tools(session, server_name=_MCP_SERVER_NAME)
         logging.info(
             "MCP 도구 목록 로드(%s, 동일 세션): %.3fs, 도구 %d개, endpoint=%s",
@@ -102,6 +106,7 @@ async def run_once(question: str) -> str:
         )
 
         model = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+        # 5. Agent with MCP Server tool 생성 
         agent = create_agent(
             model,
             tools,

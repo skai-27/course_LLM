@@ -30,6 +30,8 @@ def create_index(
   if delete_existing:
     if es_client.indices.exists(index=index_name):
       es_client.indices.delete(index=index_name)
+  elif es_client.indices.exists(index=index_name):
+    return index_name
 
   index_mapping = {
     "mappings": {
