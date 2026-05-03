@@ -8,7 +8,7 @@ from pytube import Playlist
 def get_video_urls(channel_url):
     playlist = Playlist(channel_url)
 
-    # this fixes the empty playlist.videos list
+    # pytube의 파싱 버그로 playlist.video_urls가 비어있는 경우가 있어 정규식을 직접 교체
     playlist._video_regex = re.compile(r"\"url\":\"(/watch\?v=[\w-]*)")
 
     return playlist.video_urls
